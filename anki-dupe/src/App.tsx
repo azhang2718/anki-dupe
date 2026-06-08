@@ -7,6 +7,7 @@ import ImportPage from './pages/ImportPage'
 import StatisticsPage from './pages/StatisticsPage'
 import KnowledgeGraphPage from './pages/KnowledgeGraphPage'
 import SettingsPage from './pages/SettingsPage'
+import AchievementsPage from './pages/AchievementsPage'
 
 export default function App() {
   return (
@@ -20,6 +21,7 @@ export default function App() {
           <Route path="import" element={<ImportPage />} />
           <Route path="statistics" element={<StatisticsPage />} />
           <Route path="graph" element={<KnowledgeGraphPage />} />
+          <Route path="achievements" element={<AchievementsPage />} />
           <Route path="settings" element={<SettingsPage />} />
         </Route>
       </Routes>

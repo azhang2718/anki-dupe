@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import StatCard from '../components/ui/StatCard'
 import XpBar from '../components/ui/XpBar'
+import ProgressBar from '../components/ui/ProgressBar'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import EmptyState from '../components/ui/EmptyState'
@@ -32,6 +33,7 @@ export default function DashboardPage() {
   const [wordCount, setWordCount] = useState(0)
   const [dueCount, setDueCount] = useState(0)
   const [accuracy, setAccuracy] = useState(0)
+  const [todayXp, setTodayXp] = useState(0)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -40,11 +42,13 @@ export default function DashboardPage() {
       window.db.words.count(),
       window.db.cards.countDue(),
       window.db.reviews.getAccuracy7d(),
-    ]).then(([u, wc, dc, acc]) => {
+      window.db.stats.getToday(),
+    ]).then(([u, wc, dc, acc, todayStats]) => {
       setUser(u)
       setWordCount(wc)
       setDueCount(dc)
       setAccuracy(acc)
+      setTodayXp(todayStats?.xp_earned ?? 0)
       setLoading(false)
     }).catch(() => setLoading(false))
   }, [])
@@ -111,6 +115,15 @@ export default function DashboardPage() {
             <span className="text-xs text-slate-400">{user.total_xp.toLocaleString()} total XP</span>
           </div>
           <XpBar totalXp={user.total_xp} level={user.level} />
+          <div className="mt-4 pt-4 border-t border-surface-medium">
+            <div className="flex justify-between text-xs text-slate-500 mb-1.5">
+              <span>Daily goal</span>
+              <span className={todayXp >= user.daily_xp_goal ? 'text-emerald-500 font-semibold' : ''}>
+                {todayXp >= user.daily_xp_goal ? '✓ Complete!' : `${todayXp} / ${user.daily_xp_goal} XP`}
+              </span>
+            </div>
+            <ProgressBar value={todayXp} max={user.daily_xp_goal} color={todayXp >= user.daily_xp_goal ? 'mint' : 'blue'} size="sm" />
+          </div>
         </Card>
       )}
 

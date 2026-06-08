@@ -44,6 +44,7 @@ declare global {
         getAll(): Promise<Achievement[]>
         getUnlocked(): Promise<Achievement[]>
         unlock(key: string): Promise<Achievement | null>
+        check(ctx?: { wordCount?: number; masteredCount?: number; streakDays?: number; documentCount?: number; sessionPerfect?: boolean }): Promise<Achievement[]>
       }
       documents: {
         getAll(): Promise<Document[]>

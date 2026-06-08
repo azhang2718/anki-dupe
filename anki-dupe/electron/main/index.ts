@@ -3,6 +3,7 @@ import { join } from 'path'
 import { getDb, closeDb } from '../database/db'
 import { registerDbHandlers } from '../ipc/dbHandlers'
 import { registerWidgetHandlers } from '../ipc/widgetHandlers'
+import { registerImportHandlers } from '../ipc/importHandlers'
 
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged
 

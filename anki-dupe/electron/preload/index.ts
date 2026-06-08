@@ -41,6 +41,7 @@ contextBridge.exposeInMainWorld('db', {
     getAll: () => invoke('db:achievements:getAll'),
     getUnlocked: () => invoke('db:achievements:getUnlocked'),
     unlock: (key: string) => invoke('db:achievements:unlock', key),
+    check: (ctx?: Record<string, unknown>) => invoke('db:achievements:check', ctx ?? {}),
   },
   documents: {
     getAll: () => invoke('db:documents:getAll'),

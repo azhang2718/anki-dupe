@@ -1,8 +1,9 @@
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { scheduleReview } from '../utils/fsrs'
 import { useReviewStore, type ReviewCard } from '../stores/reviewStore'
+import { useGamificationStore } from '../stores/gamificationStore'
 import CardZhToEn from '../components/flashcards/CardZhToEn'
 import CardEnToZh from '../components/flashcards/CardEnToZh'
 import CardCloze from '../components/flashcards/CardCloze'
@@ -23,6 +24,8 @@ function pickCardType(card: Card, allWords: Word[]): 'zh_to_en' | 'en_to_zh' | '
 export default function ReviewPage() {
   const navigate = useNavigate()
   const store = useReviewStore()
+  const gamification = useGamificationStore()
+  const prevLevelRef = useRef<number | null>(null)
   const [allWords, setAllWords] = useState<Word[]>([])
   const [cardKey, setCardKey] = useState(0)
 
@@ -81,9 +84,27 @@ export default function ReviewPage() {
       last_review:    new Date().toISOString(),
     })
 
-    await window.db.user.addXp(xp, `review_${rating}`)
+    const updatedUser = await window.db.user.addXp(xp, `review_${rating}`)
+
+    // Level-up detection
+    if (prevLevelRef.current !== null && updatedUser.level > prevLevelRef.current) {
+      gamification.showLevelUp(updatedUser.level)
+    }
+    prevLevelRef.current = updatedUser.level
+
+    // Achievement checks
+    const newAchievements = await window.db.achievements.check()
+    gamification.enqueueAchievements(newAchievements)
 
     store.submitRating(rating, xp)
+
+    // Check perfect session when last card is rated
+    const updatedStore = useReviewStore.getState()
+    if (updatedStore.state === 'finished' && updatedStore.incorrect === 0) {
+      const perfectAchievements = await window.db.achievements.check({ sessionPerfect: true })
+      gamification.enqueueAchievements(perfectAchievements)
+    }
+
     setCardKey((k) => k + 1)
   }, [store])
 

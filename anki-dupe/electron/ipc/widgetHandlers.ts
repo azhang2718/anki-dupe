@@ -37,8 +37,6 @@ export function createWidgetWindow(): BrowserWindow {
     widgetWin = null
   })
 
-  const isDev = !BrowserWindow.getAllWindows().find(w => !w.isDestroyed())?.isPackaged ?? true
-
   if (process.env.NODE_ENV === 'development') {
     widgetWin.loadURL('http://localhost:5173/widget.html')
   } else {

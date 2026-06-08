@@ -4,13 +4,14 @@ import XpBar from './ui/XpBar'
 import type { User } from '../types/db'
 
 const navItems = [
-  { to: '/dashboard',   label: 'Dashboard',       icon: '🏠' },
-  { to: '/review',      label: 'Review',           icon: '🃏' },
-  { to: '/vocabulary',  label: 'Vocabulary',       icon: '📚' },
-  { to: '/import',      label: 'Import',           icon: '📥' },
-  { to: '/statistics',  label: 'Statistics',       icon: '📊' },
-  { to: '/graph',       label: 'Knowledge Graph',  icon: '🕸️' },
-  { to: '/settings',    label: 'Settings',         icon: '⚙️' },
+  { to: '/dashboard',     label: 'Dashboard',       icon: '🏠' },
+  { to: '/review',        label: 'Review',           icon: '🃏' },
+  { to: '/vocabulary',    label: 'Vocabulary',       icon: '📚' },
+  { to: '/import',        label: 'Import',           icon: '📥' },
+  { to: '/statistics',    label: 'Statistics',       icon: '📊' },
+  { to: '/achievements',  label: 'Achievements',     icon: '🏆' },
+  { to: '/graph',         label: 'Knowledge Graph',  icon: '🕸️' },
+  { to: '/settings',      label: 'Settings',         icon: '⚙️' },
 ]
 
 export default function Sidebar() {

@@ -1,6 +1,7 @@
 import { ipcMain } from 'electron'
 import { getDb } from '../database/db'
 import { createInitialCards } from '../utils/fsrs'
+import { checkAchievements } from '../services/achievementChecker'
 import { userRepository } from '../database/repositories/userRepository'
 import { wordRepository } from '../database/repositories/wordRepository'
 import { cardRepository } from '../database/repositories/cardRepository'
@@ -94,6 +95,9 @@ export function registerDbHandlers(): void {
   handle('db:settings:get', (key) => settingsRepository.get(key as string))
   handle('db:settings:set', (key, value) => settingsRepository.set(key as string, value as string))
   handle('db:settings:getAll', () => settingsRepository.getAll())
+
+  // Gamification
+  handle('db:achievements:check', (ctx) => checkAchievements(ctx as Parameters<typeof checkAchievements>[0]))
 
   // Statistics
   handle('db:stats:getToday', () => statisticsRepository.getToday())
