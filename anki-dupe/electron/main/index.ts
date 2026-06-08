@@ -46,6 +46,7 @@ app.whenReady().then(() => {
   getDb()
   registerDbHandlers()
   registerWidgetHandlers()
+  registerImportHandlers()
   createMainWindow()
 
   app.on('activate', () => {

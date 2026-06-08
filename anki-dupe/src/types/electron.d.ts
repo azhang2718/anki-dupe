@@ -2,6 +2,10 @@ import type { User, Word, Card, Review, Achievement, Document, Statistic } from 
 
 declare global {
   interface Window {
+    importAPI: {
+      openDialog(type: 'files' | 'folder'): Promise<{ ok: boolean; data?: Document[]; error?: string }>
+      importPaths(paths: string[]): Promise<{ ok: boolean; data?: Document[]; error?: string }>
+    }
     electronAPI: {
       platform: string
       widget: {

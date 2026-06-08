@@ -62,6 +62,11 @@ contextBridge.exposeInMainWorld('db', {
   },
 })
 
+contextBridge.exposeInMainWorld('importAPI', {
+  openDialog: (type: 'files' | 'folder') => ipcRenderer.invoke('import:dialog', type),
+  importPaths: (paths: string[]) => ipcRenderer.invoke('import:files', paths),
+})
+
 contextBridge.exposeInMainWorld('electronAPI', {
   platform: process.platform,
   widget: {
