@@ -1,0 +1,75 @@
+import { useState } from 'react'
+import { motion } from 'framer-motion'
+import Button from '../ui/Button'
+import type { Word } from '../../types/db'
+
+interface CardClozeProps {
+  word: Word
+  onRate: (rating: 1 | 2 | 3 | 4) => void
+}
+
+export default function CardCloze({ word, onRate }: CardClozeProps) {
+  const [revealed, setRevealed] = useState(false)
+
+  // Build a cloze sentence — blank out the target word
+  const sentence = word.example_sentence ?? `_____ (${word.meaning})`
+  const clozed = word.example_sentence
+    ? word.example_sentence.replace(word.chinese, '_____')
+    : sentence
+
+  return (
+    <div className="flex flex-col items-center gap-6 w-full max-w-md mx-auto">
+      <div className="w-full bg-white rounded-lg shadow-float p-8 flex flex-col items-center gap-4 min-h-48">
+        <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">Fill in the blank</p>
+
+        <p className="font-chinese text-2xl text-slate-700 text-center leading-relaxed">
+          {clozed}
+        </p>
+
+        {revealed && (
+          <motion.div
+            className="flex flex-col items-center gap-1 border-t border-surface-medium pt-4 w-full"
+            initial={{ opacity: 0, y: 6 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <p
+              className="font-chinese text-4xl font-bold text-slate-800"
+              style={{ textShadow: '0 2px 12px rgba(149,240,192,0.5)' }}
+            >
+              {word.chinese}
+            </p>
+            <p className="text-slate-400 text-base">{word.pinyin}</p>
+            {word.example_sentence && (
+              <p className="font-chinese text-sm text-slate-500 mt-1">{word.example_sentence}</p>
+            )}
+          </motion.div>
+        )}
+      </div>
+
+      {!revealed ? (
+        <Button onClick={() => setRevealed(true)} variant="primary" size="lg" fullWidth>
+          Reveal
+        </Button>
+      ) : (
+        <motion.div
+          className="grid grid-cols-2 gap-3 w-full"
+          initial={{ opacity: 0, y: 6 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <button
+            onClick={() => onRate(1)}
+            className="no-drag flex flex-col items-center gap-1 bg-error-pink/20 hover:bg-error-pink/40 border border-error-pink/30 rounded-md py-3 transition-colors"
+          >
+            <span className="text-sm font-semibold text-rose-600">Didn't know</span>
+          </button>
+          <button
+            onClick={() => onRate(4)}
+            className="no-drag flex flex-col items-center gap-1 bg-success-mint/20 hover:bg-success-mint/40 border border-success-mint/30 rounded-md py-3 transition-colors"
+          >
+            <span className="text-sm font-semibold text-emerald-600">Got it</span>
+          </button>
+        </motion.div>
+      )}
+    </div>
+  )
+}
