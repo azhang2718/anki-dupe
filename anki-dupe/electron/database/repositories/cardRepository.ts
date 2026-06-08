@@ -6,8 +6,8 @@ export const cardRepository = {
     return getDb()
       .prepare(
         `SELECT * FROM cards
-         WHERE state != 'mastered' AND due <= datetime('now')
-         ORDER BY due ASC LIMIT ?`
+         WHERE state != 'mastered' AND datetime(due) <= datetime('now')
+         ORDER BY datetime(due) ASC LIMIT ?`
       )
       .all(limit) as Card[]
   },
@@ -57,7 +57,7 @@ export const cardRepository = {
   countDue(): number {
     return (
       getDb()
-        .prepare(`SELECT COUNT(*) as c FROM cards WHERE state != 'mastered' AND due <= datetime('now')`)
+        .prepare(`SELECT COUNT(*) as c FROM cards WHERE state != 'mastered' AND datetime(due) <= datetime('now')`)
         .get() as { c: number }
     ).c
   },

@@ -53,10 +53,11 @@ export function getDb(): Database.Database {
   const dbPath = join(userDataPath, 'anki-dupe.sqlite')
   try {
     _db = new Database(dbPath)
-    // Check integrity
-    const integrity = _db.pragma('integrity_check') as string
-    if (integrity !== 'ok') {
-      throw new Error(`Database integrity check failed: ${integrity}`)
+    // Check integrity - returns [{ integrity_check: 'ok' }] or errors
+    const result = _db.pragma('integrity_check') as any[]
+    const status = result[0]?.integrity_check
+    if (status !== 'ok') {
+      throw new Error(`Database integrity check failed: ${JSON.stringify(result)}`)
     }
   } catch (err) {
     console.error('Database initialization failed:', err)
@@ -65,8 +66,7 @@ export function getDb(): Database.Database {
     _db = new Database(dbPath) 
   }
 
-  // Enable WAL mode
- for better concurrent performance
+  // Enable WAL mode for better concurrent performance
   _db.pragma('journal_mode = WAL')
   _db.pragma('foreign_keys = ON')
 

@@ -2,6 +2,9 @@ import { ipcMain } from 'electron'
 import { getDb } from '../database/db'
 import { createInitialCards } from '../utils/fsrs'
 import { checkAchievements } from '../services/achievementChecker'
+import { recalculateImportanceScores } from '../services/importanceService'
+import { analyzeReadiness } from '../services/readingReadinessService'
+import { exportFullBackup, importFullBackup } from '../utils/backup'
 import { userRepository } from '../database/repositories/userRepository'
 import { wordRepository } from '../database/repositories/wordRepository'
 import { cardRepository } from '../database/repositories/cardRepository'
@@ -34,6 +37,7 @@ export function registerDbHandlers(): void {
   handle('db:words:delete', (id) => wordRepository.delete(id as number))
   handle('db:words:upsert', (word) => wordRepository.upsert(word as Parameters<typeof wordRepository.upsert>[0]))
   handle('db:words:count', () => wordRepository.count())
+  handle('db:words:countLearned', () => wordRepository.countLearned())
   handle('db:words:getTopByImportance', (limit) => wordRepository.getTopByImportance(limit as number))
 
   // Upsert a word and atomically create its initial FSRS cards if new
@@ -106,13 +110,9 @@ export function registerDbHandlers(): void {
   handle('db:stats:getTotals', () => statisticsRepository.getTotals())
 
   // Backup & Restoration
-  handle('db:exportFull', () => {
-    const { exportFullBackup } = require('../utils/backup')
-    return exportFullBackup()
-  })
+  handle('db:exportFull', () => exportFullBackup())
 
   handle('db:importFull', (data) => {
-    const { importFullBackup } = require('../utils/backup')
     importFullBackup(data)
     return { ok: true }
   })
@@ -152,10 +152,9 @@ export function registerDbHandlers(): void {
     `).all()
   })
 
-  handle('db:words:recalculateImportance', () => {
-    const { recalculateImportanceScores } = require('../services/importanceService')
-    return { updated: recalculateImportanceScores() }
-  })
+  handle('db:words:recalculateImportance', () => ({
+    updated: recalculateImportanceScores(),
+  }))
 
   // Knowledge graph data
   handle('db:words:getGraphData', () => {
@@ -213,8 +212,5 @@ export function registerDbHandlers(): void {
   })
 
   // Reading readiness
-  handle('db:documents:analyzeReadiness', (docId: number) => {
-    const { analyzeReadiness } = require('../services/readingReadinessService')
-    return analyzeReadiness(docId)
-  })
+  handle('db:documents:analyzeReadiness', (docId: number) => analyzeReadiness(docId))
 }

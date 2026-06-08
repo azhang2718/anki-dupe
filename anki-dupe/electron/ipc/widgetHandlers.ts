@@ -1,7 +1,6 @@
 import { ipcMain, BrowserWindow, screen } from 'electron'
 import { join } from 'path'
-
-const isDev = process.env.NODE_ENV === 'development' || !BrowserWindow.getAllWindows
+import { rendererDevUrl, rendererHtml } from '../utils/paths'
 
 let widgetWin: BrowserWindow | null = null
 
@@ -37,10 +36,11 @@ export function createWidgetWindow(): BrowserWindow {
     widgetWin = null
   })
 
-  if (process.env.NODE_ENV === 'development') {
-    widgetWin.loadURL('http://localhost:5173/widget.html')
+  const devUrl = rendererDevUrl('widget.html')
+  if (devUrl) {
+    widgetWin.loadURL(devUrl)
   } else {
-    widgetWin.loadFile(join(__dirname, '../../out/renderer/widget.html'))
+    widgetWin.loadFile(rendererHtml('widget.html'))
   }
 
   return widgetWin

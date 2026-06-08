@@ -116,13 +116,13 @@ export default function StatisticsPage() {
       window.db.stats.getTotals(),
       window.db.cards.countByState(),
       window.db.user.get(),
-      window.db.words.count(),
-    ]).then(([rows, t, states, u, wc]) => {
+      window.db.words.countLearned(),
+    ]).then(([rows, t, states, u, lc]) => {
       setDaily(fillDates(rows as Statistic[]))
       setTotals(t as Totals)
       setCardStates(states as CardStateCounts)
       setUser(u as User)
-      setWordCount(wc as number)
+      setWordCount(lc as number)
       setLoading(false)
     }).catch(() => setLoading(false))
   }, [])

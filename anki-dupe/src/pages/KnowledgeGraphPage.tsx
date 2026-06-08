@@ -1,17 +1,16 @@
 import { useEffect, useState, useCallback, useMemo } from 'react'
 import {
-  ReactFlow, Background, Controls, MiniMap,
-  useNodesState, useEdgesState, MarkerType,
+  ReactFlow, Background, Controls, MiniMap, ReactFlowProvider,
+  useNodesState, useEdgesState, useReactFlow, MarkerType,
   type Node, type Edge,
 } from '@xyflow/react'
-import '@xyflow/react/dist/style.css'
 import { motion, AnimatePresence } from 'framer-motion'
 
 const STATE_COLORS: Record<string, string> = {
-  new:      '#D4E1EE',  // silver-blue
-  learning: '#A9D6FF',  // ice-blue
-  review:   '#FFD866',  // xp-gold
-  mastered: '#95F0C0',  // success-mint
+  new:      '#D4E1EE',
+  learning: '#A9D6FF',
+  review:   '#FFD866',
+  mastered: '#95F0C0',
 }
 const STATE_BORDER: Record<string, string> = {
   new:      '#B0C8E0',
@@ -21,19 +20,23 @@ const STATE_BORDER: Record<string, string> = {
 }
 
 type WordData = {
-  id: number; chinese: string; pinyin: string; meaning: string
-  difficulty: number; importance_score: number; best_state: string
+  id: number
+  chinese: string
+  pinyin: string
+  meaning: string
+  difficulty: number
+  importance_score: number
+  best_state: string
+  source_document_id: number | null
 }
 type DocData = { id: number; title: string }
 type EdgeData = { source: string; target: string; type: 'doc' | 'char' }
 
-/** Simple force-like layout: docs in a row, words orbit their doc or grid below */
 function buildLayout(words: WordData[], docs: DocData[]) {
   const nodes: Node[] = []
   const DOC_Y = 80
   const DOC_SPACING = 220
 
-  // Document hub nodes
   const docXStart = Math.max(0, (words.length * 60 - docs.length * DOC_SPACING) / 2)
   for (let i = 0; i < docs.length; i++) {
     const d = docs[i]
@@ -56,7 +59,6 @@ function buildLayout(words: WordData[], docs: DocData[]) {
     })
   }
 
-  // Word nodes — orbit their doc, or fall into a grid
   const docPositions = new Map(
     nodes.filter((n) => n.id.startsWith('doc-')).map((n) => [n.id, n.position])
   )
@@ -64,7 +66,7 @@ function buildLayout(words: WordData[], docs: DocData[]) {
 
   for (const w of words) {
     const docId = w.source_document_id ? `doc-${w.source_document_id}` : null
-    const size = 28 + Math.round(w.importance_score * 0.14)  // 28–42px
+    const size = 28 + Math.round(w.importance_score * 0.14)
 
     let x: number, y: number
     if (docId && docPositions.has(docId)) {
@@ -77,7 +79,6 @@ function buildLayout(words: WordData[], docs: DocData[]) {
       x = docPos.x - (cols * 80) / 2 + col * 80 + Math.random() * 20
       y = docPos.y + 90 + row * 80
     } else {
-      // No doc — arrange in a grid at the bottom
       const unassignedIdx = words.filter((ww) => !ww.source_document_id).indexOf(w)
       const cols = 10
       x = (unassignedIdx % cols) * 90 + Math.random() * 15
@@ -130,57 +131,83 @@ function truncate(s: string, max: number) {
   return s.length > max ? s.slice(0, max) + '…' : s
 }
 
-export default function KnowledgeGraphPage() {
-  const [nodes, setNodes, onNodesChange] = useNodesState([])
-  const [edges, setEdges, onEdgesChange] = useEdgesState([])
+function KnowledgeGraphCanvas({
+  filter,
+  onStats,
+  onSelect,
+}: {
+  filter: string
+  onStats: (stats: { total: number; mastered: number; docs: number }) => void
+  onSelect: (word: WordData | null) => void
+}) {
+  const [nodes, setNodes, onNodesChange] = useNodesState<Node>([])
+  const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([])
   const [loading, setLoading] = useState(true)
-  const [selected, setSelected] = useState<WordData | null>(null)
-  const [stats, setStats] = useState({ total: 0, mastered: 0, docs: 0 })
-  const [filter, setFilter] = useState<string>('all')
+  const [error, setError] = useState<string | null>(null)
+  const { fitView } = useReactFlow()
 
   const load = useCallback(async () => {
     setLoading(true)
-    const data = await window.db.words.getGraphData()
-    const filteredWords = filter === 'all'
-      ? data.words
-      : data.words.filter((w) => w.best_state === filter)
+    setError(null)
+    try {
+      const data = await window.db.words.getGraphData()
+      const filteredWords = filter === 'all'
+        ? data.words
+        : data.words.filter((w) => w.best_state === filter)
 
-    setNodes(buildLayout(filteredWords, data.docs))
-    setEdges(buildEdges(
-      filter === 'all'
-        ? data.edges
-        : data.edges.filter((e) =>
-            filteredWords.some((w) => `word-${w.id}` === e.source || `word-${w.id}` === e.target)
-          )
-    ))
-    setStats({
-      total: data.words.length,
-      mastered: data.words.filter((w) => w.best_state === 'mastered').length,
-      docs: data.docs.length,
-    })
-    setLoading(false)
-  }, [filter])
+      const nextNodes = buildLayout(filteredWords, data.docs)
+      const nextEdges = buildEdges(
+        filter === 'all'
+          ? data.edges
+          : data.edges.filter((e) =>
+              filteredWords.some((w) => `word-${w.id}` === e.source || `word-${w.id}` === e.target)
+            )
+      )
+
+      setNodes(nextNodes)
+      setEdges(nextEdges)
+      onStats({
+        total: data.words.length,
+        mastered: data.words.filter((w) => w.best_state === 'mastered').length,
+        docs: data.docs.length,
+      })
+    } catch (err) {
+      setError((err as Error).message)
+      setNodes([])
+      setEdges([])
+    } finally {
+      setLoading(false)
+    }
+  }, [filter, onStats, setEdges, setNodes])
 
   useEffect(() => { load() }, [load])
 
+  useEffect(() => {
+    if (!loading && nodes.length > 0) {
+      requestAnimationFrame(() => fitView({ padding: 0.15, duration: 200 }))
+    }
+  }, [loading, nodes.length, fitView])
+
   const onNodeClick = useCallback((_: React.MouseEvent, node: Node) => {
     const wd = (node.data as { wordData?: WordData }).wordData
-    if (wd) setSelected(wd)
-  }, [])
-
-  const filterButtons = useMemo(() => [
-    { key: 'all',      label: 'All',      color: '#94a3b8' },
-    { key: 'new',      label: 'New',      color: STATE_COLORS.new },
-    { key: 'learning', label: 'Learning', color: STATE_COLORS.learning },
-    { key: 'review',   label: 'Review',   color: STATE_COLORS.review },
-    { key: 'mastered', label: 'Mastered', color: STATE_COLORS.mastered },
-  ], [])
+    onSelect(wd ?? null)
+  }, [onSelect])
 
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-3">
         <div className="w-8 h-8 border-2 border-ice-blue border-t-transparent rounded-full animate-spin" />
         <p className="text-slate-400 text-sm">Building graph…</p>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-full gap-3 px-6 text-center">
+        <p className="text-4xl">⚠️</p>
+        <p className="text-slate-600 font-medium">Could not load graph</p>
+        <p className="text-slate-400 text-sm">{error}</p>
       </div>
     )
   }
@@ -196,8 +223,51 @@ export default function KnowledgeGraphPage() {
   }
 
   return (
-    <div className="flex flex-col h-full gap-0 -mx-6 -my-4">
-      {/* Toolbar */}
+    <div className="h-full w-full">
+      <ReactFlow
+        nodes={nodes}
+        edges={edges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onNodeClick={onNodeClick}
+        minZoom={0.1}
+        maxZoom={3}
+        nodesDraggable
+        panOnDrag
+        zoomOnScroll
+        nodesConnectable={false}
+        elementsSelectable
+        proOptions={{ hideAttribution: true }}
+      >
+        <Background color="#EEF4FA" gap={20} />
+        <Controls showInteractive={false} />
+        <MiniMap
+          nodeColor={(n) => {
+            const wd = (n.data as { wordData?: WordData }).wordData
+            return wd ? (STATE_COLORS[wd.best_state] ?? '#D4E1EE') : '#A9D6FF'
+          }}
+          style={{ borderRadius: 12 }}
+        />
+      </ReactFlow>
+    </div>
+  )
+}
+
+export default function KnowledgeGraphPage() {
+  const [selected, setSelected] = useState<WordData | null>(null)
+  const [stats, setStats] = useState({ total: 0, mastered: 0, docs: 0 })
+  const [filter, setFilter] = useState<string>('all')
+
+  const filterButtons = useMemo(() => [
+    { key: 'all',      label: 'All',      color: '#94a3b8' },
+    { key: 'new',      label: 'New',      color: STATE_COLORS.new },
+    { key: 'learning', label: 'Learning', color: STATE_COLORS.learning },
+    { key: 'review',   label: 'Review',   color: STATE_COLORS.review },
+    { key: 'mastered', label: 'Mastered', color: STATE_COLORS.mastered },
+  ], [])
+
+  return (
+    <div className="flex flex-col -mx-8 -my-8 h-[calc(100vh-2.25rem)] overflow-hidden">
       <div className="flex items-center justify-between px-6 py-3 bg-white/80 border-b border-surface-medium shrink-0">
         <div className="flex items-center gap-2">
           <span className="text-sm font-semibold text-slate-600">Knowledge Graph</span>
@@ -223,37 +293,16 @@ export default function KnowledgeGraphPage() {
         </div>
       </div>
 
-      {/* Graph */}
-      <div className="flex-1 relative">
-        <ReactFlow
-          nodes={nodes}
-          edges={edges}
-          onNodesChange={onNodesChange}
-          onEdgesChange={onEdgesChange}
-          onNodeClick={onNodeClick}
-          fitView
-          fitViewOptions={{ padding: 0.15 }}
-          minZoom={0.1}
-          maxZoom={3}
-          nodesDraggable
-          panOnDrag
-          zoomOnScroll
-          nodesConnectable={false}
-          elementsSelectable
-        >
-          <Background color="#EEF4FA" gap={20} />
-          <Controls showInteractive={false} />
-          <MiniMap
-            nodeColor={(n) => {
-              const wd = (n.data as { wordData?: WordData }).wordData
-              return wd ? (STATE_COLORS[wd.best_state] ?? '#D4E1EE') : '#A9D6FF'
-            }}
-            style={{ borderRadius: 12 }}
+      <div className="flex-1 min-h-0 relative">
+        <ReactFlowProvider>
+          <KnowledgeGraphCanvas
+            filter={filter}
+            onStats={setStats}
+            onSelect={setSelected}
           />
-        </ReactFlow>
+        </ReactFlowProvider>
 
-        {/* Legend */}
-        <div className="absolute bottom-16 left-4 bg-white/90 backdrop-blur-sm rounded-lg shadow-soft p-3 flex flex-col gap-1.5 pointer-events-none">
+        <div className="absolute bottom-16 left-4 bg-white/90 backdrop-blur-sm rounded-lg shadow-soft p-3 flex flex-col gap-1.5 pointer-events-none z-10">
           {Object.entries(STATE_COLORS).map(([state, color]) => (
             <div key={state} className="flex items-center gap-2">
               <div className="w-3 h-3 rounded-full border" style={{ background: color, borderColor: STATE_BORDER[state] }} />
@@ -272,11 +321,10 @@ export default function KnowledgeGraphPage() {
           </div>
         </div>
 
-        {/* Word detail panel */}
         <AnimatePresence>
           {selected && (
             <motion.div
-              className="absolute top-4 right-4 w-56 bg-white rounded-xl shadow-modal p-4 flex flex-col gap-2"
+              className="absolute top-4 right-4 w-56 bg-white rounded-xl shadow-modal p-4 flex flex-col gap-2 z-10"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: 20 }}

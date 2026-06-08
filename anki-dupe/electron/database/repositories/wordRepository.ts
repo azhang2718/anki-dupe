@@ -67,6 +67,15 @@ export const wordRepository = {
     return (getDb().prepare('SELECT COUNT(*) as c FROM words').get() as { c: number }).c
   },
 
+  /** Words the user has reviewed at least once (reps > 0 on any card). */
+  countLearned(): number {
+    return (
+      getDb()
+        .prepare('SELECT COUNT(DISTINCT word_id) as c FROM cards WHERE reps > 0')
+        .get() as { c: number }
+    ).c
+  },
+
   getTopByImportance(limit = 20): Word[] {
     return getDb()
       .prepare('SELECT * FROM words ORDER BY importance_score DESC LIMIT ?')

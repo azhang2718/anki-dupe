@@ -3,19 +3,62 @@
   "version": "0.1.0",
   "description": "Chinese vocabulary learning desktop companion",
   "main": "out/main/index.js",
+  "author": "Ronny",
+  "license": "MIT",
   "scripts": {
     "dev": "electron-vite dev",
     "build": "electron-vite build",
     "preview": "electron-vite preview",
-    "electron:dev": "electron-vite dev",
+    "start": "electron-vite preview",
+    "dist": "npm run build && electron-builder",
+    "dist:win": "npm run build && electron-builder --win",
+    "postinstall": "electron-builder install-app-deps",
     "test": "vitest",
     "test:run": "vitest run",
     "lint": "eslint src --ext .ts,.tsx",
     "format": "prettier --write src"
   },
-  "keywords": [],
-  "author": "",
-  "license": "MIT",
+  "build": {
+    "appId": "com.anki-dupe.app",
+    "productName": "Anki Dupe",
+    "copyright": "Copyright © 2026",
+    "directories": {
+      "output": "release",
+      "buildResources": "build"
+    },
+    "files": [
+      "out/**/*",
+      "package.json",
+      "node_modules/**/*"
+    ],
+    "asar": true,
+    "asarUnpack": [
+      "**/node_modules/better-sqlite3/**",
+      "**/node_modules/tesseract.js/**"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "mac": {
+      "target": ["dmg"],
+      "category": "public.app-category.education"
+    },
+    "linux": {
+      "target": ["AppImage"],
+      "category": "Education"
+    }
+  },
   "devDependencies": {
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^20.0.0",

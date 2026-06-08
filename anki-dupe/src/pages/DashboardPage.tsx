@@ -31,6 +31,7 @@ export default function DashboardPage() {
   const navigate = useNavigate()
   const [user, setUser] = useState<User | null>(null)
   const [wordCount, setWordCount] = useState(0)
+  const [learnedCount, setLearnedCount] = useState(0)
   const [dueCount, setDueCount] = useState(0)
   const [accuracy, setAccuracy] = useState(0)
   const [todayXp, setTodayXp] = useState(0)
@@ -40,12 +41,14 @@ export default function DashboardPage() {
     Promise.all([
       window.db.user.get(),
       window.db.words.count(),
+      window.db.words.countLearned(),
       window.db.cards.countDue(),
       window.db.reviews.getAccuracy7d(),
       window.db.stats.getToday(),
-    ]).then(([u, wc, dc, acc, todayStats]) => {
+    ]).then(([u, wc, lc, dc, acc, todayStats]) => {
       setUser(u)
       setWordCount(wc)
+      setLearnedCount(lc)
       setDueCount(dc)
       setAccuracy(acc)
       setTodayXp(todayStats?.xp_earned ?? 0)
@@ -85,7 +88,7 @@ export default function DashboardPage() {
 
       {/* Stats row */}
       <div className="grid grid-cols-3 gap-4">
-        <StatCard label="Words Learned" value={wordCount} icon="📖" color="blue" />
+        <StatCard label="Words Learned" value={learnedCount} icon="📖" color="blue" subtext={wordCount > learnedCount ? `${wordCount} in library` : undefined} />
         <StatCard
           label="Day Streak"
           value={user ? `${user.streak_days} 🔥` : '0'}

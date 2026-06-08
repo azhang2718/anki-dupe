@@ -29,10 +29,8 @@ export default function ReviewPage() {
   const [allWords, setAllWords] = useState<Word[]>([])
   const [cardKey, setCardKey] = useState(0)
 
-  // Load session on mount
+  // Load session on mount (always reset — zustand state persists across route changes)
   useEffect(() => {
-    if (store.state !== 'idle') return
-
     store.reset()
     Promise.all([
       window.db.cards.getDue(20),

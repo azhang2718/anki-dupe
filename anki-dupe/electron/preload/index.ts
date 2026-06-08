@@ -22,6 +22,7 @@ contextBridge.exposeInMainWorld('db', {
     upsert: (word: unknown) => invoke('db:words:upsert', word),
     upsertWithCards: (word: unknown) => invoke('db:words:upsertWithCards', word),
     count: () => invoke('db:words:count'),
+    countLearned: () => invoke('db:words:countLearned'),
     getTopByImportance: (limit?: number) => invoke('db:words:getTopByImportance', limit),
     getEnriched: () => invoke('db:words:getEnriched'),
     recalculateImportance: () => invoke('db:words:recalculateImportance'),

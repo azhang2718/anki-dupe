@@ -9,8 +9,17 @@ import { registerClaudeHandlers } from '../ipc/claudeHandlers'
 import { registerWindowHandlers } from '../ipc/windowHandlers'
 import { registerSystemHandlers } from '../ipc/systemHandlers'
 import { log, rotateLogs } from '../utils/logger'
+import { rendererDevUrl, rendererHtml } from '../utils/paths'
 
-const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged
+function loadRenderer(win: BrowserWindow, entry: string): void {
+  const devUrl = rendererDevUrl(entry)
+  if (devUrl) {
+    win.loadURL(devUrl)
+    if (entry === 'index.html') win.webContents.openDevTools()
+  } else {
+    win.loadFile(rendererHtml(entry))
+  }
+}
 
 function createMainWindow(): BrowserWindow {
   const win = new BrowserWindow({
@@ -36,12 +45,7 @@ function createMainWindow(): BrowserWindow {
     return { action: 'deny' }
   })
 
-  if (isDev) {
-    win.loadURL('http://localhost:5173')
-    win.webContents.openDevTools()
-  } else {
-    win.loadFile(join(__dirname, '../../out/renderer/index.html'))
-  }
+  loadRenderer(win, 'index.html')
 
   return win
 }

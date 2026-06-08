@@ -173,10 +173,11 @@ export function scheduleReview(card: FSRSCard, rating: Rating, now = new Date())
  * Returns one zh_to_en card; additional card types added as the word matures.
  */
 export function createInitialCards(wordId: number): Omit<import('../types/db').Card, 'id' | 'created_at'>[] {
+  const due = new Date().toISOString().slice(0, 19).replace('T', ' ')
   const base = {
     word_id:        wordId,
     state:          'new' as const,
-    due:            new Date().toISOString(),
+    due,
     stability:      0,
     difficulty:     5,
     elapsed_days:   0,

@@ -22,6 +22,15 @@ declare global {
         setExpanded(value: boolean): Promise<void>
         isOpen(): Promise<boolean>
       }
+      window: {
+        minimize(): Promise<void>
+        maximize(): Promise<void>
+        close(): Promise<void>
+      }
+      system: {
+        log(msg: string, level: string): Promise<void>
+        getLogs(): Promise<{ ok: boolean; data: string }>
+      }
     }
     db: {
       user: {
@@ -33,9 +42,11 @@ declare global {
       words: {
         getAll(): Promise<Word[]>
         getById(id: number): Promise<Word | null>
+        delete(id: number): Promise<void>
         upsert(word: Omit<Word, 'id' | 'created_at'>): Promise<Word>
         upsertWithCards(word: Omit<Word, 'id' | 'created_at'>): Promise<Word>
         count(): Promise<number>
+        countLearned(): Promise<number>
         getTopByImportance(limit?: number): Promise<Word[]>
         getEnriched(): Promise<EnrichedWord[]>
         recalculateImportance(): Promise<{ updated: number }>
@@ -81,6 +92,10 @@ declare global {
         getToday(): Promise<Statistic | null>
         getLast30Days(): Promise<Statistic[]>
         getTotals(): Promise<{ totalReviewed: number; totalCorrect: number; totalXp: number; totalTimeMs: number }>
+      }
+      backup: {
+        exportFull(): Promise<any>
+        importFull(data: any): Promise<{ ok: boolean }>
       }
     }
   }
