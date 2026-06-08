@@ -1,9 +1,14 @@
 import { app, BrowserWindow, shell } from 'electron'
 import { join } from 'path'
-import { getDb, closeDb } from '../database/db'
+import { getDb, closeDb, backupDatabase } from '../database/db'
 import { registerDbHandlers } from '../ipc/dbHandlers'
 import { registerWidgetHandlers } from '../ipc/widgetHandlers'
 import { registerImportHandlers } from '../ipc/importHandlers'
+import { registerOcrHandlers } from '../ipc/ocrHandlers'
+import { registerClaudeHandlers } from '../ipc/claudeHandlers'
+import { registerWindowHandlers } from '../ipc/windowHandlers'
+import { registerSystemHandlers } from '../ipc/systemHandlers'
+import { log, rotateLogs } from '../utils/logger'
 
 const isDev = process.env.NODE_ENV === 'development' || !app.isPackaged
 
@@ -42,11 +47,22 @@ function createMainWindow(): BrowserWindow {
 }
 
 app.whenReady().then(() => {
+  // Initialize logging
+  rotateLogs()
+  log('Application starting...')
+
+  // Backup database
+  backupDatabase()
+
   // Initialize database first
   getDb()
   registerDbHandlers()
   registerWidgetHandlers()
   registerImportHandlers()
+  registerOcrHandlers()
+  registerClaudeHandlers()
+  registerWindowHandlers()
+  registerSystemHandlers()
   createMainWindow()
 
   app.on('activate', () => {
@@ -54,7 +70,10 @@ app.whenReady().then(() => {
   })
 })
 
-app.on('window-all-closed', () => {
+app.on('window-all-closed', async () => {
+  log('Application closing...')
+  const { terminateOcrWorker } = await import('../services/ocrService')
+  await terminateOcrWorker().catch(() => {})
   closeDb()
   if (process.platform !== 'darwin') app.quit()
 })

@@ -72,4 +72,8 @@ export const wordRepository = {
       .prepare('SELECT * FROM words ORDER BY importance_score DESC LIMIT ?')
       .all(limit) as Word[]
   },
+
+  delete(id: number): void {
+    getDb().prepare('DELETE FROM words WHERE id = ?').run(id)
+  },
 }

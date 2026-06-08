@@ -31,6 +31,7 @@ export function registerDbHandlers(): void {
   // Words
   handle('db:words:getAll', () => wordRepository.getAll())
   handle('db:words:getById', (id) => wordRepository.getById(id as number))
+  handle('db:words:delete', (id) => wordRepository.delete(id as number))
   handle('db:words:upsert', (word) => wordRepository.upsert(word as Parameters<typeof wordRepository.upsert>[0]))
   handle('db:words:count', () => wordRepository.count())
   handle('db:words:getTopByImportance', (limit) => wordRepository.getTopByImportance(limit as number))
@@ -103,4 +104,117 @@ export function registerDbHandlers(): void {
   handle('db:stats:getToday', () => statisticsRepository.getToday())
   handle('db:stats:getLast30Days', () => statisticsRepository.getLast30Days())
   handle('db:stats:getTotals', () => statisticsRepository.getTotals())
+
+  // Backup & Restoration
+  handle('db:exportFull', () => {
+    const { exportFullBackup } = require('../utils/backup')
+    return exportFullBackup()
+  })
+
+  handle('db:importFull', (data) => {
+    const { importFullBackup } = require('../utils/backup')
+    importFullBackup(data)
+    return { ok: true }
+  })
+
+  // Vocabulary intelligence
+  handle('db:words:getEnriched', () => {
+    const db = getDb()
+    return db.prepare(`
+      SELECT
+        w.*,
+        COALESCE(cs.best_state, 'new')             AS card_state,
+        COALESCE(cs.next_due, datetime('now'))      AS next_due,
+        COALESCE(rs.total_reviews, 0)               AS total_reviews,
+        COALESCE(rs.correct_reviews, 0)             AS correct_reviews
+      FROM words w
+      LEFT JOIN (
+        SELECT word_id,
+               MAX(CASE state WHEN 'mastered' THEN 4 WHEN 'review' THEN 3
+                              WHEN 'learning' THEN 2 ELSE 1 END) AS state_rank,
+               CASE MAX(CASE state WHEN 'mastered' THEN 4 WHEN 'review' THEN 3
+                                   WHEN 'learning' THEN 2 ELSE 1 END)
+                 WHEN 4 THEN 'mastered' WHEN 3 THEN 'review'
+                 WHEN 2 THEN 'learning' ELSE 'new' END AS best_state,
+               MIN(due) AS next_due
+        FROM cards
+        GROUP BY word_id
+      ) cs ON cs.word_id = w.id
+      LEFT JOIN (
+        SELECT c.word_id,
+               COUNT(r.id)                                     AS total_reviews,
+               SUM(CASE WHEN r.rating >= 3 THEN 1 ELSE 0 END) AS correct_reviews
+        FROM reviews r
+        JOIN cards c ON c.id = r.card_id
+        GROUP BY c.word_id
+      ) rs ON rs.word_id = w.id
+      ORDER BY w.importance_score DESC
+    `).all()
+  })
+
+  handle('db:words:recalculateImportance', () => {
+    const { recalculateImportanceScores } = require('../services/importanceService')
+    return { updated: recalculateImportanceScores() }
+  })
+
+  // Knowledge graph data
+  handle('db:words:getGraphData', () => {
+    const db = getDb()
+
+    interface WordRow {
+      id: number; chinese: string; pinyin: string; meaning: string
+      difficulty: number; importance_score: number; source_document_id: number | null
+      best_state: string
+    }
+    interface DocRow { id: number; title: string }
+
+    const words = db.prepare(`
+      SELECT w.id, w.chinese, w.pinyin, w.meaning, w.difficulty, w.importance_score,
+             w.source_document_id,
+             COALESCE(
+               CASE MAX(CASE c.state WHEN 'mastered' THEN 4 WHEN 'review' THEN 3
+                                     WHEN 'learning' THEN 2 ELSE 1 END)
+                 WHEN 4 THEN 'mastered' WHEN 3 THEN 'review'
+                 WHEN 2 THEN 'learning' ELSE 'new' END, 'new') AS best_state
+      FROM words w LEFT JOIN cards c ON c.word_id = w.id
+      GROUP BY w.id
+      ORDER BY w.importance_score DESC
+      LIMIT 120
+    `).all() as WordRow[]
+
+    const docIds = [...new Set(words.map((w) => w.source_document_id).filter(Boolean))]
+    const docs = docIds.length
+      ? db.prepare(`SELECT id, title FROM documents WHERE id IN (${docIds.join(',')})`)
+          .all() as DocRow[]
+      : []
+
+    // Build edges: word → source doc
+    const edges: { source: string; target: string; type: 'doc' | 'char' }[] = []
+    for (const w of words) {
+      if (w.source_document_id) {
+        edges.push({ source: `doc-${w.source_document_id}`, target: `word-${w.id}`, type: 'doc' })
+      }
+    }
+
+    // Build character-sharing edges (only for words with 2+ chars; limit to top-importance pairs)
+    const top60 = words.slice(0, 60)
+    for (let i = 0; i < top60.length; i++) {
+      for (let j = i + 1; j < top60.length; j++) {
+        const a = top60[i]; const b = top60[j]
+        if (a.chinese.length < 2 || b.chinese.length < 2) continue
+        const shared = [...a.chinese].some((ch) => b.chinese.includes(ch))
+        if (shared) {
+          edges.push({ source: `word-${a.id}`, target: `word-${b.id}`, type: 'char' })
+        }
+      }
+    }
+
+    return { words, docs, edges }
+  })
+
+  // Reading readiness
+  handle('db:documents:analyzeReadiness', (docId: number) => {
+    const { analyzeReadiness } = require('../services/readingReadinessService')
+    return analyzeReadiness(docId)
+  })
 }

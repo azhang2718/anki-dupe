@@ -1,3 +1,4 @@
+import { motion } from 'framer-motion'
 import type { ReactNode } from 'react'
 
 interface CardProps {
@@ -18,17 +19,19 @@ export default function Card({
   padding = 'md',
 }: CardProps) {
   return (
-    <div
+    <motion.div
       onClick={onClick}
+      whileHover={onClick ? { scale: 1.01, y: -2 } : {}}
+      whileTap={onClick ? { scale: 0.99 } : {}}
       className={[
         'rounded-lg shadow-soft',
         glass ? 'glass' : 'bg-white',
         paddingClasses[padding],
-        onClick ? 'cursor-pointer hover:shadow-float transition-shadow duration-200' : '',
+        onClick ? 'cursor-pointer hover:shadow-float transition-all duration-200' : '',
         className,
       ].join(' ')}
     >
       {children}
-    </div>
+    </motion.div>
   )
 }

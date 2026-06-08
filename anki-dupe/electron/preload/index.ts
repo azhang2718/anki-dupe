@@ -18,10 +18,14 @@ contextBridge.exposeInMainWorld('db', {
   words: {
     getAll: () => invoke('db:words:getAll'),
     getById: (id: number) => invoke('db:words:getById', id),
+    delete: (id: number) => invoke('db:words:delete', id),
     upsert: (word: unknown) => invoke('db:words:upsert', word),
     upsertWithCards: (word: unknown) => invoke('db:words:upsertWithCards', word),
     count: () => invoke('db:words:count'),
     getTopByImportance: (limit?: number) => invoke('db:words:getTopByImportance', limit),
+    getEnriched: () => invoke('db:words:getEnriched'),
+    recalculateImportance: () => invoke('db:words:recalculateImportance'),
+    getGraphData: () => invoke('db:words:getGraphData'),
   },
   cards: {
     getDue: (limit?: number) => invoke('db:cards:getDue', limit),
@@ -49,6 +53,7 @@ contextBridge.exposeInMainWorld('db', {
     create: (doc: unknown) => invoke('db:documents:create', doc),
     updateStatus: (id: number, status: string, rawText?: string) =>
       invoke('db:documents:updateStatus', id, status, rawText),
+    analyzeReadiness: (docId: number) => invoke('db:documents:analyzeReadiness', docId),
   },
   settings: {
     get: (key: string) => invoke('db:settings:get', key),
@@ -60,11 +65,28 @@ contextBridge.exposeInMainWorld('db', {
     getLast30Days: () => invoke('db:stats:getLast30Days'),
     getTotals: () => invoke('db:stats:getTotals'),
   },
+  backup: {
+    exportFull: () => invoke('db:exportFull'),
+    importFull: (data: unknown) => invoke('db:importFull', data),
+  },
+})
+
+contextBridge.exposeInMainWorld('claudeAPI', {
+  testKey: () => ipcRenderer.invoke('claude:testKey'),
+  extractFromDocument: (docId: number) => ipcRenderer.invoke('claude:extractFromDocument', docId),
+  extractFromText: (text: string) => ipcRenderer.invoke('claude:extractFromText', text),
 })
 
 contextBridge.exposeInMainWorld('importAPI', {
   openDialog: (type: 'files' | 'folder') => ipcRenderer.invoke('import:dialog', type),
   importPaths: (paths: string[]) => ipcRenderer.invoke('import:files', paths),
+  processDocument: (docId: number) => ipcRenderer.invoke('ocr:processDocument', docId),
+  processAll: () => ipcRenderer.invoke('ocr:processAll'),
+  onProgress: (cb: (data: { docId: number; pct: number; status: string }) => void) => {
+    const handler = (_: Electron.IpcRendererEvent, data: { docId: number; pct: number; status: string }) => cb(data)
+    ipcRenderer.on('ocr:progress', handler)
+    return () => ipcRenderer.removeListener('ocr:progress', handler)
+  },
 })
 
 contextBridge.exposeInMainWorld('electronAPI', {
@@ -74,5 +96,14 @@ contextBridge.exposeInMainWorld('electronAPI', {
     setAlwaysOnTop: (v: boolean) => ipcRenderer.invoke('widget:setAlwaysOnTop', v),
     setExpanded:  (v: boolean) => ipcRenderer.invoke('widget:setExpanded', v),
     isOpen:       () => ipcRenderer.invoke('widget:isOpen'),
+  },
+  window: {
+    minimize: () => ipcRenderer.invoke('window:minimize'),
+    maximize: () => ipcRenderer.invoke('window:maximize'),
+    close:    () => ipcRenderer.invoke('window:close'),
+  },
+  system: {
+    log: (msg: string, level: string) => ipcRenderer.invoke('system:log', msg, level),
+    getLogs: () => ipcRenderer.invoke('system:getLogs'),
   },
 })

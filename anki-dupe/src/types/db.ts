@@ -75,6 +75,29 @@ export interface Document {
   created_at: string
 }
 
+export interface ReadinessResult {
+  docId: number
+  comprehensionScore: number
+  totalVocabFound: number
+  knownCount: number
+  unknownWords: {
+    id: number
+    chinese: string
+    pinyin: string
+    meaning: string
+    difficulty: number
+    importance_score: number
+    card_state: string
+  }[]
+}
+
+export interface EnrichedWord extends Word {
+  card_state: 'new' | 'learning' | 'review' | 'mastered'
+  next_due: string
+  total_reviews: number
+  correct_reviews: number
+}
+
 export interface Statistic {
   id: number
   date: string

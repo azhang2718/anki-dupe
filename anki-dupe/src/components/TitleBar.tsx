@@ -26,11 +26,23 @@ export default function TitleBar() {
         >
           {widgetOpen ? '📌 Widget' : '🪟 Widget'}
         </button>
-        {/* macOS-style window controls — functional ones come in Phase 14 */}
+        {/* macOS-style window controls */}
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded-full bg-error-pink/70 hover:bg-error-pink cursor-pointer" />
-          <div className="w-3 h-3 rounded-full bg-xp-gold/70 hover:bg-xp-gold cursor-pointer" />
-          <div className="w-3 h-3 rounded-full bg-success-mint/70 hover:bg-success-mint cursor-pointer" />
+          <button
+            onClick={() => window.electronAPI?.window?.close()}
+            className="w-3 h-3 rounded-full bg-error-pink/70 hover:bg-error-pink transition-colors"
+            title="Close"
+          />
+          <button
+            onClick={() => window.electronAPI?.window?.minimize()}
+            className="w-3 h-3 rounded-full bg-xp-gold/70 hover:bg-xp-gold transition-colors"
+            title="Minimize"
+          />
+          <button
+            onClick={() => window.electronAPI?.window?.maximize()}
+            className="w-3 h-3 rounded-full bg-success-mint/70 hover:bg-success-mint transition-colors"
+            title="Maximize"
+          />
         </div>
       </div>
     </div>

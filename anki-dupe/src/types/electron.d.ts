@@ -1,10 +1,18 @@
-import type { User, Word, Card, Review, Achievement, Document, Statistic } from './db'
+import type { User, Word, Card, Review, Achievement, Document, Statistic, EnrichedWord, ReadinessResult } from './db'
 
 declare global {
   interface Window {
+    claudeAPI: {
+      testKey(): Promise<{ ok: boolean; data?: boolean; error?: string }>
+      extractFromDocument(docId: number): Promise<{ ok: boolean; data?: { wordsAdded: number; words: Word[] }; error?: string }>
+      extractFromText(text: string): Promise<{ ok: boolean; data?: Word[]; error?: string }>
+    }
     importAPI: {
       openDialog(type: 'files' | 'folder'): Promise<{ ok: boolean; data?: Document[]; error?: string }>
       importPaths(paths: string[]): Promise<{ ok: boolean; data?: Document[]; error?: string }>
+      processDocument(docId: number): Promise<{ ok: boolean; data?: Document; error?: string }>
+      processAll(): Promise<{ ok: boolean; data?: { id: number; ok: boolean; error?: string }[] }>
+      onProgress(cb: (data: { docId: number; pct: number; status: string }) => void): () => void
     }
     electronAPI: {
       platform: string
@@ -29,6 +37,13 @@ declare global {
         upsertWithCards(word: Omit<Word, 'id' | 'created_at'>): Promise<Word>
         count(): Promise<number>
         getTopByImportance(limit?: number): Promise<Word[]>
+        getEnriched(): Promise<EnrichedWord[]>
+        recalculateImportance(): Promise<{ updated: number }>
+        getGraphData(): Promise<{
+          words: Array<{ id: number; chinese: string; pinyin: string; meaning: string; difficulty: number; importance_score: number; source_document_id: number | null; best_state: string }>
+          docs: Array<{ id: number; title: string }>
+          edges: Array<{ source: string; target: string; type: 'doc' | 'char' }>
+        }>
       }
       cards: {
         getDue(limit?: number): Promise<Card[]>
@@ -55,6 +70,7 @@ declare global {
         getById(id: number): Promise<Document | null>
         create(doc: Omit<Document, 'id' | 'created_at'>): Promise<Document>
         updateStatus(id: number, status: Document['processing_status'], rawText?: string): Promise<void>
+        analyzeReadiness(docId: number): Promise<ReadinessResult>
       }
       settings: {
         get(key: string): Promise<string>
