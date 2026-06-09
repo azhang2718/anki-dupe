@@ -53,6 +53,32 @@ async function getWorker(langs: string[]): Promise<import('tesseract.js').Worker
   }
 }
 
+/**
+ * Recognise a single hand-drawn character using Tesseract PSM.SINGLE_CHAR.
+ * Returns the raw string Tesseract recognised (caller trims / validates).
+ */
+export async function ocrSingleChar(imagePath: string): Promise<string> {
+  const { setLogging } = await import('tesseract.js')
+  setLogging(false)
+
+  const langs = getActiveLangs()
+  const worker = await getWorker(langs)
+
+  // PSM 10 = single character mode; OEM 1 = LSTM only (better accuracy for CJK)
+  await worker.setParameters({
+    tessedit_pageseg_mode: '10' as any,
+    tessedit_ocr_engine_mode: '1' as any,
+  })
+
+  try {
+    const result = await worker.recognize(imagePath, {}, { text: true })
+    return result.data.text.trim()
+  } finally {
+    // Reset back to default PSM (3) so document OCR still works normally
+    await worker.setParameters({ tessedit_pageseg_mode: '3' as any })
+  }
+}
+
 export async function ocrImage(
   imagePath: string,
   onProgress?: (pct: number) => void

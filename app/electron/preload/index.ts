@@ -29,6 +29,8 @@ contextBridge.exposeInMainWorld('db', {
     recalculateImportance: () => invoke('db:words:recalculateImportance'),
     getGraphData: () => invoke('db:words:getGraphData'),
     getByChinese: (chinese: string) => invoke('db:words:getByChinese', chinese),
+    deleteMany: (ids: number[]) => invoke('db:words:deleteMany', ids),
+    findInvalidScript: () => invoke<number[]>('db:words:findInvalidScript'),
   },
   cards: {
     getDue: (limit?: number) => invoke('db:cards:getDue', limit),
@@ -53,6 +55,7 @@ contextBridge.exposeInMainWorld('db', {
   },
   documents: {
     getAll: () => invoke('db:documents:getAll'),
+    delete: (id: number) => invoke('db:documents:delete', id),
     getById: (id: number) => invoke('db:documents:getById', id),
     create: (doc: unknown) => invoke('db:documents:create', doc),
     updateStatus: (id: number, status: string, rawText?: string) =>
@@ -93,6 +96,7 @@ contextBridge.exposeInMainWorld('importAPI', {
   importPaths: (paths: string[]) => ipcRenderer.invoke('import:files', paths),
   processDocument: (docId: number) => ipcRenderer.invoke('ocr:processDocument', docId),
   processAll: () => ipcRenderer.invoke('ocr:processAll'),
+  identifyDrawing: (imageDataUrl: string) => ipcRenderer.invoke('ocr:identifyDrawing', imageDataUrl),
   onProgress: (cb: (data: { docId: number; pct: number; status: string }) => void) => {
     const handler = (_: Electron.IpcRendererEvent, data: { docId: number; pct: number; status: string }) => cb(data)
     ipcRenderer.on('ocr:progress', handler)

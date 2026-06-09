@@ -37,14 +37,14 @@ export const LANGUAGE_CONFIGS: Record<LanguageCode, LanguageConfig> = {
     nativeName: '日本語',
     flag: '🇯🇵',
     ocrLangs: ['eng', 'jpn'],
-    readingLabel: 'Furigana',
+    readingLabel: 'Romaji',
     fontFamily: 'Noto Sans JP',
     fontClass: 'font-japanese',
     charLabel: 'Word',
     color: '#BC4E9C',
     extractionNotes: `
-- "chinese": the Japanese word (kanji/hiragana/katakana as it appears in context)
-- "pinyin": hiragana reading / furigana (e.g. "にほんご") — use hiragana, not romaji
+- "chinese": the Japanese word written ENTIRELY in hiragana (no kanji/katakana)
+- "pinyin": Hepburn romanization of the word in plain English letters (e.g. "nihongo", "benkyou") — NO hiragana/kanji, only romaji
 - "meaning": concise English definition`,
   },
   korean: {
@@ -59,8 +59,8 @@ export const LANGUAGE_CONFIGS: Record<LanguageCode, LanguageConfig> = {
     charLabel: 'Word',
     color: '#3E92CC',
     extractionNotes: `
-- "chinese": the Korean word (hangul as it appears in context)
-- "pinyin": Revised Romanization of Korean (e.g. "annyeong")
+- "chinese": the Korean word written ENTIRELY in hangul (no hanja/CJK characters)
+- "pinyin": Revised Romanization of Korean in plain Latin letters ONLY — a-z, no hangul (e.g. "annyeong", "gongbu", "haengbok")
 - "meaning": concise English definition`,
   },
 }

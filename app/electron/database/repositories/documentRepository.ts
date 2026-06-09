@@ -45,6 +45,14 @@ export const documentRepository = {
     }
   },
 
+  delete(id: number): void {
+    const db = getDb()
+    // Remove associated words' source reference (don't cascade-delete words —
+    // the user may want to keep studying them even after removing the source doc)
+    db.prepare('UPDATE words SET source_document_id = NULL WHERE source_document_id = ?').run(id)
+    db.prepare('DELETE FROM documents WHERE id = ?').run(id)
+  },
+
   updateComprehension(id: number, known: number, total: number): void {
     const score = total > 0 ? Math.round((known / total) * 100) : 0
     getDb()

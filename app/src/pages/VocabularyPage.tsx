@@ -52,6 +52,8 @@ export default function VocabularyPage() {
   const [recalculating, setRecalculating] = useState(false)
   const [selected, setSelected] = useState<EnrichedWord | null>(null)
   const [activeLang, setActiveLang] = useState<LanguageCode>('chinese')
+  const [invalidCount, setInvalidCount] = useState<number | null>(null)
+  const [cleaningUp, setCleaningUp] = useState(false)
 
   const load = useCallback(() => {
     window.db.words.getEnriched().then((ws) => {
@@ -65,6 +67,10 @@ export default function VocabularyPage() {
       .then((l) => setActiveLang((l ?? 'chinese') as LanguageCode))
       .catch(() => null)
     load()
+    // Count invalid-script words for the cleanup badge
+    ;(window.db.words as any).findInvalidScript()
+      .then((ids: number[]) => setInvalidCount(ids.length))
+      .catch(() => null)
   }, [load])
 
   const recalculate = async () => {
@@ -72,6 +78,20 @@ export default function VocabularyPage() {
     await window.db.words.recalculateImportance()
     await load()
     setRecalculating(false)
+  }
+
+  const cleanupInvalidScript = async () => {
+    const ids: number[] = await (window.db.words as any).findInvalidScript()
+    if (!ids.length) { setInvalidCount(0); return }
+    const confirmed = confirm(
+      `Remove ${ids.length} word${ids.length !== 1 ? 's' : ''} that don't match ${langConfig.name} script?\n\nThis will delete those words and their flashcards permanently.`
+    )
+    if (!confirmed) return
+    setCleaningUp(true)
+    await (window.db.words as any).deleteMany(ids)
+    setInvalidCount(0)
+    await load()
+    setCleaningUp(false)
   }
 
   const langConfig = LANGUAGE_CONFIGS[activeLang]
@@ -122,14 +142,27 @@ export default function VocabularyPage() {
             {words.length} {langConfig.name} words in your library
           </p>
         </div>
-        <Button
-          onClick={recalculate}
-          variant="ghost"
-          size="sm"
-          disabled={recalculating || words.length === 0}
-        >
-          {recalculating ? 'Recalculating…' : '↻ Recalculate scores'}
-        </Button>
+        <div className="flex gap-2">
+          {invalidCount !== null && invalidCount > 0 && (
+            <Button
+              onClick={cleanupInvalidScript}
+              variant="ghost"
+              size="sm"
+              disabled={cleaningUp}
+              className="text-rose-400 hover:text-rose-500 hover:bg-rose-50"
+            >
+              {cleaningUp ? 'Removing…' : `✕ Remove ${invalidCount} non-${langConfig.name}`}
+            </Button>
+          )}
+          <Button
+            onClick={recalculate}
+            variant="ghost"
+            size="sm"
+            disabled={recalculating || words.length === 0}
+          >
+            {recalculating ? 'Recalculating…' : '↻ Recalculate scores'}
+          </Button>
+        </div>
       </div>
 
       {/* Search */}

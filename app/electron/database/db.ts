@@ -8,6 +8,7 @@ import { up as migration003, version as v003 } from './migrations/003_add_catego
 import { up as migration004, version as v004 } from './migrations/004_stats_mastered'
 import { getSettingsDb } from './settingsDb'
 import type { LanguageCode } from './languages'
+import { seedAlphabetIfNeeded } from './seeds/index'
 
 const migrations = [
   { version: v001, sql: migration001 },
@@ -91,6 +92,7 @@ function openLanguageDb(lang: LanguageCode): Database.Database {
 
   runMigrations(db)
   ensureDefaultUser(db)
+  seedAlphabetIfNeeded(db, lang)
 
   return db
 }

@@ -30,7 +30,7 @@ export const LANGUAGE_CONFIGS: Record<LanguageCode, LanguageConfig> = {
     name: 'Japanese',
     nativeName: '日本語',
     flag: '🇯🇵',
-    readingLabel: 'Furigana',
+    readingLabel: 'Romaji',
     charLabel: 'Word',
     color: '#BC4E9C',
     fontFamily: '"Noto Sans JP", sans-serif',

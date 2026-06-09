@@ -4,17 +4,18 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { scheduleReview } from '../utils/fsrs'
 import { useReviewStore, type ReviewCard } from '../stores/reviewStore'
 import CardZhToEn from '../components/flashcards/CardZhToEn'
-import CardEnToZh from '../components/flashcards/CardEnToZh'
+import CardMCQ from '../components/flashcards/CardMCQ'
 import CardCloze from '../components/flashcards/CardCloze'
 import SessionSummary from '../components/flashcards/SessionSummary'
 import ProgressBar from '../components/ui/ProgressBar'
 import EmptyState from '../components/ui/EmptyState'
 import Button from '../components/ui/Button'
 import type { Card, Word } from '../types/db'
+import type { LanguageCode } from '../types/languages'
 
-function pickCardType(card: Card, allWords: Word[]): 'zh_to_en' | 'en_to_zh' | 'cloze' {
+function pickCardType(card: Card, allWords: Word[]): 'zh_to_en' | 'mcq' | 'cloze' {
   if (card.card_type === 'cloze') return 'cloze'
-  if (card.card_type === 'en_to_zh' && allWords.length >= 4) return 'en_to_zh'
+  if (card.card_type === 'en_to_zh' && allWords.length >= 4) return 'mcq'
   return 'zh_to_en'
 }
 
@@ -32,13 +33,18 @@ export default function ReviewPage() {
   const store = useReviewStore()
   const [allWords, setAllWords] = useState<Word[]>([])
   const [cardKey, setCardKey] = useState(0)
+  const [activeLang, setActiveLang] = useState<LanguageCode>('chinese')
 
   useEffect(() => {
+    window.db.language.get()
+      .then((l) => setActiveLang((l ?? 'chinese') as LanguageCode))
+      .catch(() => null)
+
     store.reset()
     Promise.all([
-      window.db.cards.getDue(20),
+      window.db.cards.getDue(40),
       window.db.words.getAll(),
-      window.db.cards.getMastered(5),
+      window.db.cards.getMastered(20),
     ]).then(async ([dueCards, words, masteredCards]) => {
       setAllWords(words as Word[])
 
@@ -53,8 +59,8 @@ export default function ReviewPage() {
 
       if (dueQueue.length === 0) { store.startSession([]); return }
 
-      // Inject 1 mastered challenge per 5 due, max 3
-      const challengeCount = Math.min(3, Math.floor(dueQueue.length / 5))
+      // Inject 1 mastered challenge per 3 due cards, cap at 10
+      const challengeCount = Math.min(10, Math.floor(dueQueue.length / 3))
       const challenges = (
         await Promise.all((masteredCards as Card[]).slice(0, challengeCount).map((c) => makeCard(c, true)))
       ).filter((x): x is ReviewCard => x !== null)
@@ -91,9 +97,24 @@ export default function ReviewPage() {
     setCardKey((k) => k + 1)
   }, [store])
 
+  /** Rate a distractor word as "again" (1) to push it back in the queue */
+  const handlePenalizeWord = useCallback(async (wordId: number) => {
+    const cards = await window.db.cards.getByWordId(wordId)
+    // Penalise whichever card for this word is not yet mastered
+    const target = cards.find((c) => c.state !== 'mastered') ?? cards[0]
+    if (!target) return
+    const fsrs = scheduleReview(target, 1)
+    await window.db.cards.update(target.id, {
+      due: fsrs.due, state: fsrs.state, stability: fsrs.stability,
+      difficulty: fsrs.difficulty, elapsed_days: fsrs.elapsed_days,
+      scheduled_days: fsrs.scheduled_days, reps: fsrs.reps,
+      lapses: fsrs.lapses, last_review: new Date().toISOString(),
+    })
+  }, [])
+
   const handleRestart = useCallback(() => {
     store.reset()
-    window.db.cards.getDue(20).then(async (dueCards) => {
+    window.db.cards.getDue(40).then(async (dueCards) => {
       if ((dueCards as Card[]).length === 0) { store.startSession([]); return }
       const cards = (await Promise.all(
         (dueCards as Card[]).map(async (card) => {
@@ -181,7 +202,7 @@ export default function ReviewPage() {
             transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
           >
             {cardType === 'zh_to_en' && <CardZhToEn word={word} isChallenge={isChallenge} onRate={handleRate} />}
-            {cardType === 'en_to_zh' && <CardEnToZh word={word} allWords={allWords} onRate={handleRate} />}
+            {cardType === 'mcq' && <CardMCQ word={word} allWords={allWords} activeLang={activeLang} onRate={handleRate} onPenalizeWord={handlePenalizeWord} />}
             {cardType === 'cloze' && <CardCloze word={word} isChallenge={isChallenge} onRate={handleRate} />}
           </motion.div>
         </AnimatePresence>
@@ -189,7 +210,7 @@ export default function ReviewPage() {
 
       <div className="flex justify-center pb-2">
         <span className="text-xs text-slate-300 uppercase tracking-widest">
-          {cardType === 'zh_to_en' ? 'Chinese → English' : cardType === 'en_to_zh' ? 'English → Chinese' : 'Fill in the blank'}
+          {cardType === 'zh_to_en' ? 'Translate to English' : cardType === 'mcq' ? 'Pick the right word' : 'Fill in the blank'}
         </span>
       </div>
     </div>

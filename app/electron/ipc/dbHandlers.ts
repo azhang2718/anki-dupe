@@ -14,6 +14,7 @@ import { documentRepository } from '../database/repositories/documentRepository'
 import { settingsRepository } from '../database/repositories/settingsRepository'
 import { statisticsRepository } from '../database/repositories/statisticsRepository'
 import { LANGUAGE_CODES, type LanguageCode } from '../database/languages'
+import { isValidScript } from '../utils/scriptValidator'
 
 function handle(channel: string, fn: (...args: unknown[]) => unknown) {
   ipcMain.handle(channel, (_event, ...args) => {
@@ -81,6 +82,35 @@ export function registerDbHandlers(): void {
   handle('db:words:countLearned', () => wordRepository.countLearned())
   handle('db:words:getTopByImportance', (limit) => wordRepository.getTopByImportance(limit as number))
 
+  // Delete a batch of word IDs (and their cards/reviews via cascade or explicit delete)
+  handle('db:words:deleteMany', (ids) => {
+    const db = getDb()
+    const list = ids as number[]
+    return db.transaction(() => {
+      const delCards   = db.prepare('DELETE FROM cards   WHERE word_id = ?')
+      const delReviews = db.prepare(`
+        DELETE FROM reviews WHERE card_id IN (SELECT id FROM cards WHERE word_id = ?)
+      `)
+      const delWord    = db.prepare('DELETE FROM words   WHERE id = ?')
+      for (const id of list) {
+        // reviews must go before cards (FK)
+        db.prepare('DELETE FROM reviews WHERE card_id IN (SELECT id FROM cards WHERE word_id = ?)').run(id)
+        delCards.run(id)
+        delWord.run(id)
+      }
+      return list.length
+    })()
+  })
+
+  // Return IDs of words whose script doesn't match the active language
+  handle('db:words:findInvalidScript', () => {
+    const lang = getActiveLanguage()
+    const words = wordRepository.getAll() as { id: number; chinese: string }[]
+    return words
+      .filter((w) => !isValidScript(w.chinese, lang))
+      .map((w) => w.id)
+  })
+
   handle('db:words:upsertWithCards', (word) => {
     const db = getDb()
     const w = word as Parameters<typeof wordRepository.upsert>[0]
@@ -138,6 +168,7 @@ export function registerDbHandlers(): void {
   handle('db:achievements:unlock', (key) => achievementRepository.unlock(key as string))
 
   // ─── Documents ─────────────────────────────────────────────────────────────
+  handle('db:documents:delete', (id) => documentRepository.delete(id as number))
   handle('db:documents:getAll', () => documentRepository.getAll())
   handle('db:documents:getById', (id) => documentRepository.getById(id as number))
   handle('db:documents:create', (doc) => documentRepository.create(doc as Parameters<typeof documentRepository.create>[0]))

@@ -66,21 +66,18 @@ export default function CardCloze({ word, isChallenge, onRate }: CardClozeProps)
             className="no-drag flex flex-col items-center gap-1 bg-error-pink/20 hover:bg-error-pink/40 border border-error-pink/30 rounded-md py-3 transition-colors"
           >
             <span className="text-sm font-semibold text-rose-600">Don't know</span>
-            <span className="text-[10px] text-slate-400">+0 XP</span>
           </button>
           <button
             onClick={() => onRate(2)}
             className="no-drag flex flex-col items-center gap-1 bg-xp-gold/20 hover:bg-xp-gold/40 border border-xp-gold/30 rounded-md py-3 transition-colors"
           >
             <span className="text-sm font-semibold text-amber-600">Partial</span>
-            <span className="text-[10px] text-slate-400">+3 XP</span>
           </button>
           <button
             onClick={() => onRate(4)}
             className="no-drag flex flex-col items-center gap-1 bg-success-mint/20 hover:bg-success-mint/40 border border-success-mint/30 rounded-md py-3 transition-colors"
           >
             <span className="text-sm font-semibold text-emerald-600">Got it</span>
-            <span className="text-[10px] text-slate-400">+10 XP</span>
           </button>
         </motion.div>
       )}

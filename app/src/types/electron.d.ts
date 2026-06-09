@@ -14,6 +14,7 @@ declare global {
       importPaths(paths: string[]): Promise<{ ok: boolean; data?: Document[]; error?: string }>
       processDocument(docId: number): Promise<{ ok: boolean; data?: Document; error?: string }>
       processAll(): Promise<{ ok: boolean; data?: { id: number; ok: boolean; error?: string }[] }>
+      identifyDrawing(imageDataUrl: string): Promise<{ ok: boolean; data?: { identified: string; word: Word | null; lang: string } | null; error?: string }>
       onProgress(cb: (data: { docId: number; pct: number; status: string }) => void): () => void
     }
     electronAPI: {
@@ -57,6 +58,8 @@ declare global {
           words: Array<{ id: number; chinese: string; pinyin: string; meaning: string; difficulty: number; importance_score: number; category: string; best_state: string }>
         }>
         getByChinese(chinese: string): Promise<Word | null>
+        deleteMany(ids: number[]): Promise<number>
+        findInvalidScript(): Promise<number[]>
       }
       cards: {
         getDue(limit?: number): Promise<Card[]>
@@ -81,6 +84,7 @@ declare global {
       }
       documents: {
         getAll(): Promise<Document[]>
+        delete(id: number): Promise<void>
         getById(id: number): Promise<Document | null>
         create(doc: Omit<Document, 'id' | 'created_at'>): Promise<Document>
         updateStatus(id: number, status: Document['processing_status'], rawText?: string): Promise<void>

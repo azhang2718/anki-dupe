@@ -30,8 +30,24 @@ function getClient(): Anthropic {
 
 // ─── Language-aware extraction ────────────────────────────────────────────────
 
+const SCRIPT_RULES: Record<LanguageCode, string> = {
+  chinese: `STRICT SCRIPT RULE — applies only to the "chinese" field:
+  - The "chinese" field MUST contain simplified Chinese characters (CJK: 一-鿿).
+  - EXCLUDE any word written in hiragana, katakana, or hangul.
+  - EXCLUDE words that are purely English, Latin, or numeric.
+  - The "pinyin" field MUST be standard tone-marked pinyin in Latin letters (e.g. "nǐ hǎo"). Never put Chinese characters in "pinyin".`,
+  japanese: `STRICT SCRIPT RULE — applies only to the "chinese" field:
+  - The "chinese" field MUST be written ENTIRELY in hiragana (ぁ-ゟ). NO kanji, NO katakana, NO hangul.
+  - If a word is commonly written with kanji, convert it fully to hiragana (e.g. 勉強 → べんきょう).
+  - The "pinyin" field MUST be Hepburn romanization in plain Latin letters (e.g. "benkyou", "taberu"). NEVER put hiragana or kanji in "pinyin" — only a-z characters.`,
+  korean: `STRICT SCRIPT RULE — applies only to the "chinese" field:
+  - The "chinese" field MUST be written ENTIRELY in hangul (가-힯). NO hanja, NO hiragana, NO katakana.
+  - The "pinyin" field MUST be Revised Romanization of Korean written in plain Latin letters (e.g. "annyeong", "gongbu", "saranghae"). NEVER put hangul or any Korean characters in "pinyin" — only a-z characters.`,
+}
+
 function buildExtractionPrompt(text: string, language: LanguageCode): { system: string; user: string } {
   const config = LANGUAGE_CONFIGS[language]
+  const scriptRule = SCRIPT_RULES[language]
 
   const system = `You are a ${config.name} language expert that extracts vocabulary from text.
 Return ONLY a valid JSON array. No markdown, no explanation — just the raw JSON array.`
@@ -40,10 +56,12 @@ Return ONLY a valid JSON array. No markdown, no explanation — just the raw JSO
   const exampleEntry = language === 'chinese'
     ? `{"chinese":"学习","pinyin":"xuéxí","meaning":"to study; to learn","part_of_speech":"verb","difficulty":1,"frequency_score":95,"category":"Education & Culture","example_sentence":"我每天都在学习中文。","example_translation":"I study Chinese every day."}`
     : language === 'japanese'
-    ? `{"chinese":"勉強","pinyin":"べんきょう","meaning":"to study; studying","part_of_speech":"noun/verb","difficulty":1,"frequency_score":92,"category":"Education & Culture","example_sentence":"毎日日本語を勉強します。","example_translation":"I study Japanese every day."}`
+    ? `{"chinese":"べんきょう","pinyin":"benkyou","meaning":"to study; studying","part_of_speech":"noun/verb","difficulty":1,"frequency_score":92,"category":"Education & Culture","example_sentence":"まいにちにほんごをべんきょうします。","example_translation":"I study Japanese every day."}`
     : `{"chinese":"공부","pinyin":"gongbu","meaning":"to study; studying","part_of_speech":"noun/verb","difficulty":1,"frequency_score":92,"category":"Education & Culture","example_sentence":"매일 한국어를 공부합니다.","example_translation":"I study Korean every day."}`
 
   const user = `Extract the most useful ${config.name} vocabulary words from this text for a language learner.
+
+${scriptRule}
 
 Rules:
 - Focus on unique, useful words (avoid ultra-common function words unless contextually important)
@@ -59,7 +77,7 @@ ${fieldNotes}
 - "part_of_speech": grammatical role
 - "difficulty": 1–5
 - "frequency_score": 1–100
-- "example_sentence": a short natural ${config.name} sentence using the word
+- "example_sentence": a short natural ${config.name} sentence using the word (must follow the script rule above)
 - "example_translation": English translation of the example
 
 Return this exact JSON structure (the "chinese" field holds the target-language word, "pinyin" holds the reading):

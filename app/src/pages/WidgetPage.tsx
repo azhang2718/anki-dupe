@@ -1,8 +1,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { scheduleReview } from '../utils/fsrs'
-import ProgressBar from '../components/ui/ProgressBar'
-import type { User, Word, Card } from '../types/db'
+import type { Word, Card } from '../types/db'
 
 interface CurrentCard { card: Card; word: Word }
 
@@ -13,31 +12,19 @@ const RATINGS: { key: RatingKey; label: string; value: 1 | 2 | 4; color: string 
   { key: 'good',  label: 'Know',  value: 4, color: 'hover:bg-success-mint/30 border-success-mint/20 text-emerald-500' },
 ]
 
-function xpForLevel(level: number): number {
-  let xp = 0
-  for (let i = 1; i < level; i++) xp += i * 100
-  return xp
-}
-
 export default function WidgetPage() {
   const [expanded, setExpanded]           = useState(false)
   const [alwaysOnTop, setAlwaysOnTopState]= useState(false)
-  const [user, setUser]                   = useState<User | null>(null)
   const [current, setCurrent]             = useState<CurrentCard | null>(null)
   const [revealed, setRevealed]           = useState(false)
   const [dueCount, setDueCount]           = useState(0)
   const [cardKey, setCardKey]             = useState(0)
-  const [xpFlash, setXpFlash]             = useState<number | null>(null)
 
   const loadNext = useCallback(async () => {
-    const [dueCards, u] = await Promise.all([
-      window.db.cards.getDue(1),
-      window.db.user.get(),
-    ])
-    setUser(u)
+    const dueCards = await window.db.cards.getDue(1)
     setDueCount(await window.db.cards.countDue())
     if (dueCards[0]) {
-      const word = (await window.db.words.getById(dueCards[0].word_id))
+      const word = await window.db.words.getById(dueCards[0].word_id)
       if (word) setCurrent({ card: dueCards[0], word })
       else setCurrent(null)
     } else {
@@ -50,7 +37,6 @@ export default function WidgetPage() {
 
   async function handleRate(rating: 1 | 2 | 4) {
     if (!current) return
-    const xp = rating === 1 ? 5 : rating === 2 ? 20 : 10
     const fsrs = scheduleReview(current.card, rating)
 
     await Promise.all([
@@ -63,13 +49,10 @@ export default function WidgetPage() {
       }),
       window.db.reviews.create({
         card_id: current.card.id, word_id: current.word.id,
-        rating, time_taken_ms: 0, xp_earned: xp,
+        rating, time_taken_ms: 0, xp_earned: 0,
       }),
-      window.db.user.addXp(xp, `widget_review_${rating}`),
     ])
 
-    setXpFlash(xp)
-    setTimeout(() => setXpFlash(null), 1200)
     setCardKey(k => k + 1)
     await loadNext()
   }
@@ -86,14 +69,6 @@ export default function WidgetPage() {
     window.electronAPI?.widget?.setAlwaysOnTop(next)
   }
 
-  const level = user?.level ?? 1
-  const totalXp = user?.total_xp ?? 0
-  const currentLevelXp = xpForLevel(level)
-  const nextLevelXp = xpForLevel(level + 1)
-  const xpProgress = totalXp - currentLevelXp
-  const xpNeeded = nextLevelXp - currentLevelXp
-  const xpPct = xpNeeded > 0 ? (xpProgress / xpNeeded) * 100 : 0
-
   return (
     <div
       className="w-full h-screen overflow-hidden"
@@ -108,10 +83,7 @@ export default function WidgetPage() {
         <div className="drag-region flex items-center justify-between px-4 py-3 border-b border-white/30">
           <div className="flex items-center gap-2">
             <span className="text-base">🀄</span>
-            <div>
-              <p className="text-xs font-bold text-slate-700 leading-none">Anki Dupe</p>
-              <p className="text-[10px] text-slate-400">Lv.{level} · {user?.streak_days ?? 0}🔥</p>
-            </div>
+            <p className="text-xs font-bold text-slate-700 leading-none">Anki Dupe</p>
           </div>
           <div className="no-drag flex items-center gap-1.5">
             <button
@@ -210,28 +182,12 @@ export default function WidgetPage() {
           </AnimatePresence>
         </div>
 
-        {/* ── Footer: XP bar ── */}
+        {/* ── Footer: due count ── */}
         <div className="px-4 pb-3 pt-1 border-t border-white/30">
-          <div className="flex justify-between text-[10px] text-slate-400 mb-1">
-            <span>XP {xpProgress} / {xpNeeded}</span>
-            <span>{dueCount > 0 ? `${dueCount} due` : '✓ done'}</span>
-          </div>
-          <ProgressBar value={xpPct} color="gold" size="sm" animated={false} />
+          <p className="text-[10px] text-slate-400 text-center">
+            {dueCount > 0 ? `${dueCount} card${dueCount !== 1 ? 's' : ''} due` : '✓ all done'}
+          </p>
         </div>
-
-        {/* XP flash */}
-        <AnimatePresence>
-          {xpFlash !== null && (
-            <motion.div
-              className="absolute top-12 right-4 text-xs font-bold text-xp-gold pointer-events-none"
-              initial={{ opacity: 1, y: 0 }}
-              animate={{ opacity: 0, y: -20 }}
-              transition={{ duration: 1.0 }}
-            >
-              +{xpFlash} XP
-            </motion.div>
-          )}
-        </AnimatePresence>
       </motion.div>
     </div>
   )

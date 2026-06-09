@@ -70,25 +70,20 @@ export default function CardZhToEn({ word, isChallenge, onRate }: CardZhToEnProp
           >
             <span className="text-lg">😵</span>
             <span className="text-xs font-semibold text-rose-600">Don't know</span>
-            <span className="text-[10px] text-slate-400">+0 XP</span>
           </button>
-          {/* Partial — 3 XP */}
           <button
             onClick={() => onRate(2)}
             className="no-drag flex flex-col items-center gap-1 bg-xp-gold/20 hover:bg-xp-gold/40 border border-xp-gold/30 rounded-md py-3 px-2 transition-colors"
           >
             <span className="text-lg">😐</span>
             <span className="text-xs font-semibold text-amber-600">Partial</span>
-            <span className="text-[10px] text-slate-400">+3 XP</span>
           </button>
-          {/* Know it — 10 XP */}
           <button
             onClick={() => onRate(4)}
             className="no-drag flex flex-col items-center gap-1 bg-success-mint/20 hover:bg-success-mint/40 border border-success-mint/30 rounded-md py-3 px-2 transition-colors"
           >
             <span className="text-lg">😊</span>
             <span className="text-xs font-semibold text-emerald-600">Know it</span>
-            <span className="text-[10px] text-slate-400">+10 XP</span>
           </button>
         </motion.div>
       )}

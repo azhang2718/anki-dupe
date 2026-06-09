@@ -350,6 +350,10 @@ export default function ImportPage() {
                   onProcess={() => processOne(doc.id)}
                   onExtract={() => extractVocab(doc.id)}
                   onAnalyze={() => navigate(`/reading/${doc.id}`)}
+                  onDelete={async () => {
+                    await window.db.documents.delete(doc.id)
+                    setDocs((prev) => prev.filter((d) => d.id !== doc.id))
+                  }}
                 />
               </motion.div>
             ))}
@@ -396,6 +400,7 @@ function DocumentRow({
   onProcess,
   onExtract,
   onAnalyze,
+  onDelete,
 }: {
   doc: Document
   isNew: boolean
@@ -403,6 +408,7 @@ function DocumentRow({
   onProcess: () => void
   onExtract: () => void
   onAnalyze: () => void
+  onDelete: () => void
 }) {
   const folder = parentFolder(doc.file_path ?? '')
   const isProcessing = doc.processing_status === 'processing' || progress !== undefined
@@ -462,6 +468,13 @@ function DocumentRow({
               ? `${progress}%`
               : STATUS_LABELS[doc.processing_status] ?? doc.processing_status}
           </Badge>
+          <button
+            onClick={(e) => { e.stopPropagation(); onDelete() }}
+            className="no-drag text-slate-300 hover:text-rose-400 transition-colors text-sm leading-none"
+            title="Remove document"
+          >
+            ✕
+          </button>
         </div>
       </div>
       {isProcessing && (

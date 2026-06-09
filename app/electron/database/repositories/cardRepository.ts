@@ -2,12 +2,19 @@ import { getDb } from '../db'
 import type { Card } from '../schema'
 
 export const cardRepository = {
-  getDue(limit = 20): Card[] {
+  getDue(limit = 30): Card[] {
     return getDb()
       .prepare(
         `SELECT * FROM cards
          WHERE state != 'mastered' AND datetime(due) <= datetime('now')
-         ORDER BY datetime(due) ASC LIMIT ?`
+         ORDER BY
+           CASE state
+             WHEN 'review'   THEN 0
+             WHEN 'learning' THEN 1
+             ELSE                 2
+           END,
+           datetime(due) ASC
+         LIMIT ?`
       )
       .all(limit) as Card[]
   },
