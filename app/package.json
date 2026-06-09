@@ -1,0 +1,107 @@
+{
+  "name": "anki-dupe",
+  "version": "0.1.0",
+  "description": "Chinese vocabulary learning desktop companion",
+  "main": "out/main/index.js",
+  "author": "Ronny",
+  "license": "MIT",
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "start": "electron-vite preview",
+    "dist": "npm run build && electron-builder",
+    "dist:win": "npm run build && electron-builder --win",
+    "postinstall": "electron-builder install-app-deps",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "lint": "eslint src --ext .ts,.tsx",
+    "format": "prettier --write src"
+  },
+  "build": {
+    "appId": "com.anki-dupe.app",
+    "productName": "Anki Dupe",
+    "copyright": "Copyright © 2026",
+    "directories": {
+      "output": "../release",
+      "buildResources": "build"
+    },
+    "files": [
+      "out/**/*",
+      "package.json",
+      "node_modules/**/*"
+    ],
+    "asar": true,
+    "asarUnpack": [
+      "**/node_modules/better-sqlite3/**",
+      "**/node_modules/tesseract.js/**"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "mac": {
+      "target": [
+        "dmg"
+      ],
+      "category": "public.app-category.education"
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Education"
+    }
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^20.0.0",
+    "@types/pdf-parse": "^1.1.5",
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@typescript-eslint/eslint-plugin": "^7.0.0",
+    "@typescript-eslint/parser": "^7.0.0",
+    "@vitejs/plugin-react": "^4.2.0",
+    "autoprefixer": "^10.4.0",
+    "electron": "^31.7.7",
+    "electron-builder": "^24.0.0",
+    "electron-vite": "^2.3.0",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react": "^7.34.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "jsdom": "^29.1.1",
+    "postcss": "^8.4.0",
+    "prettier": "^3.2.0",
+    "tailwindcss": "^3.4.0",
+    "typescript": "^5.4.0",
+    "vite": "^5.0.0",
+    "vitest": "^1.6.0"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.102.0",
+    "@phosphor-icons/react": "^2.1.10",
+    "@xyflow/react": "^12.11.0",
+    "better-sqlite3": "^12.10.0",
+    "framer-motion": "^11.0.0",
+    "mammoth": "^1.12.0",
+    "pdf-parse": "^2.4.5",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.22.0",
+    "recharts": "^2.12.0",
+    "tesseract.js": "^7.0.0",
+    "zustand": "^4.5.0"
+  }
+}
