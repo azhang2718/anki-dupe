@@ -1,6 +1,7 @@
 import { app, BrowserWindow, shell } from 'electron'
 import { join } from 'path'
-import { getDb, closeDb, backupDatabase } from '../database/db'
+import { getSettingsDb, closeSettingsDb } from '../database/settingsDb'
+import { getDb, closeDb, backupDatabase, initActiveLanguage } from '../database/db'
 import { registerDbHandlers } from '../ipc/dbHandlers'
 import { registerWidgetHandlers } from '../ipc/widgetHandlers'
 import { registerImportHandlers } from '../ipc/importHandlers'
@@ -52,15 +53,22 @@ function createMainWindow(): BrowserWindow {
 }
 
 app.whenReady().then(() => {
-  // Initialize logging
   rotateLogs()
   log('Application starting...')
 
-  // Backup database
-  backupDatabase()
+  // 1. Open global settings DB first (needed to determine active language)
+  getSettingsDb()
 
-  // Initialize database first
+  // 2. Read and apply active language before opening any language DB
+  initActiveLanguage()
+
+  // 3. Backup the active language DB (non-fatal)
+  try { backupDatabase() } catch { /* ignore */ }
+
+  // 4. Open the active language DB
   getDb()
+
+  // 5. Register IPC handlers
   registerDbHandlers()
   registerWidgetHandlers()
   registerImportHandlers()
@@ -68,6 +76,7 @@ app.whenReady().then(() => {
   registerClaudeHandlers()
   registerWindowHandlers()
   registerSystemHandlers()
+
   createMainWindow()
 
   app.on('activate', () => {
@@ -80,5 +89,6 @@ app.on('window-all-closed', async () => {
   const { terminateOcrWorker } = await import('../services/ocrService')
   await terminateOcrWorker().catch(() => {})
   closeDb()
+  closeSettingsDb()
   if (process.platform !== 'darwin') app.quit()
 })

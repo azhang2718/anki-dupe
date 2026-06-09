@@ -6,9 +6,8 @@ import ReviewPage from './pages/ReviewPage'
 import VocabularyPage from './pages/VocabularyPage'
 import ImportPage from './pages/ImportPage'
 import StatisticsPage from './pages/StatisticsPage'
-import KnowledgeGraphPage from './pages/KnowledgeGraphPage'
+import DrawPage from './pages/DrawPage'
 import SettingsPage from './pages/SettingsPage'
-import AchievementsPage from './pages/AchievementsPage'
 import ReadingReadinessPage from './pages/ReadingReadinessPage'
 
 export default function App() {
@@ -23,8 +22,7 @@ export default function App() {
             <Route path="vocabulary" element={<VocabularyPage />} />
             <Route path="import" element={<ImportPage />} />
             <Route path="statistics" element={<StatisticsPage />} />
-            <Route path="graph" element={<KnowledgeGraphPage />} />
-            <Route path="achievements" element={<AchievementsPage />} />
+            <Route path="graph" element={<DrawPage />} />
             <Route path="reading/:docId" element={<ReadingReadinessPage />} />
             <Route path="settings" element={<SettingsPage />} />
           </Route>

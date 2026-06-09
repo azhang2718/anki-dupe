@@ -1,8 +1,11 @@
 import { ipcMain } from 'electron'
+import Anthropic from '@anthropic-ai/sdk'
 import { extractVocabulary, testApiKey } from '../services/claudeService'
 import { documentRepository } from '../database/repositories/documentRepository'
 import { wordRepository } from '../database/repositories/wordRepository'
-import { getDb } from '../database/db'
+import { settingsRepository } from '../database/repositories/settingsRepository'
+import { getDb, getActiveLanguage } from '../database/db'
+import { LANGUAGE_CONFIGS } from '../database/languages'
 import { createInitialCards } from '../utils/fsrs'
 
 function handle(channel: string, fn: (...args: unknown[]) => unknown) {
@@ -16,7 +19,6 @@ function handle(channel: string, fn: (...args: unknown[]) => unknown) {
 }
 
 export function registerClaudeHandlers(): void {
-  // Test whether the stored API key works
   handle('claude:testKey', () => testApiKey())
 
   // Extract vocabulary from a document's raw text and save words+cards
@@ -25,7 +27,8 @@ export function registerClaudeHandlers(): void {
     if (!doc) throw new Error('Document not found')
     if (!doc.raw_text) throw new Error('Document has no extracted text. Run OCR first.')
 
-    const words = await extractVocabulary(doc.raw_text)
+    const language = getActiveLanguage()
+    const words = await extractVocabulary(doc.raw_text, language)
     if (!words.length) throw new Error('No vocabulary found in document')
 
     const db = getDb()
@@ -33,7 +36,7 @@ export function registerClaudeHandlers(): void {
     const saved = db.transaction(() => {
       const results = []
       for (const w of words) {
-        const saved = wordRepository.upsert({
+        const savedWord = wordRepository.upsert({
           chinese:             w.chinese,
           pinyin:              w.pinyin,
           meaning:             w.meaning,
@@ -47,10 +50,9 @@ export function registerClaudeHandlers(): void {
           category:            w.category ?? 'Other',
         })
 
-        // Create cards only if none exist yet for this word
-        const existing = db.prepare('SELECT id FROM cards WHERE word_id = ?').all(saved.id)
+        const existing = db.prepare('SELECT id FROM cards WHERE word_id = ?').all(savedWord.id)
         if (existing.length === 0) {
-          for (const card of createInitialCards(saved.id)) {
+          for (const card of createInitialCards(savedWord.id)) {
             db.prepare(
               `INSERT INTO cards
                 (word_id, card_type, state, due, stability, difficulty,
@@ -63,20 +65,61 @@ export function registerClaudeHandlers(): void {
             )
           }
         }
-        results.push(saved)
+        results.push(savedWord)
       }
       return results
     })()
 
-    // Update document word count
     documentRepository.updateComprehension(docId, 0, saved.length)
 
     return { wordsAdded: saved.length, words: saved }
   })
 
-  // Extract vocabulary from arbitrary text (used in Settings preview / manual entry)
+  // Extract vocabulary from arbitrary text
   handle('claude:extractFromText', async (text: string) => {
-    const words = await extractVocabulary(text)
-    return words
+    const language = getActiveLanguage()
+    return extractVocabulary(text, language)
+  })
+
+  // Identify a hand-drawn character — language-aware prompt
+  handle('claude:identifyCharacter', async (imageDataUrl: string) => {
+    const apiKey = settingsRepository.get('claude_api_key') ?? ''
+    if (!apiKey) throw new Error('Claude API key not set. Add it in Settings.')
+    const client = new Anthropic({ apiKey })
+
+    const lang = getActiveLanguage()
+    const config = LANGUAGE_CONFIGS[lang]
+
+    const base64 = (imageDataUrl as string).replace(/^data:image\/\w+;base64,/, '')
+
+    const promptText = lang === 'chinese'
+      ? `This is a hand-drawn Chinese character. Identify it and return ONLY a JSON object, no markdown:
+{"chinese":"字","pinyin":"zì","meaning":"character; word","confidence":"high"}
+If you cannot identify it, return: {"chinese":"?","pinyin":"","meaning":"Could not identify","confidence":"low"}`
+      : lang === 'japanese'
+      ? `This is a hand-drawn Japanese character (hiragana, katakana, or kanji). Identify it and return ONLY a JSON object, no markdown:
+{"chinese":"勉強","pinyin":"べんきょう","meaning":"study; to study","confidence":"high"}
+The "chinese" field is the Japanese word/character. The "pinyin" field is the hiragana reading.
+If you cannot identify it, return: {"chinese":"?","pinyin":"","meaning":"Could not identify","confidence":"low"}`
+      : `This is a hand-drawn Korean character (hangul). Identify it and return ONLY a JSON object, no markdown:
+{"chinese":"공부","pinyin":"gongbu","meaning":"study; to study","confidence":"high"}
+The "chinese" field is the Korean word. The "pinyin" field is the Revised Romanization.
+If you cannot identify it, return: {"chinese":"?","pinyin":"","meaning":"Could not identify","confidence":"low"}`
+
+    const message = await client.messages.create({
+      model: 'claude-haiku-4-5-20251001',
+      max_tokens: 256,
+      messages: [{
+        role: 'user',
+        content: [
+          { type: 'image', source: { type: 'base64', media_type: 'image/png', data: base64 } },
+          { type: 'text', text: promptText },
+        ],
+      }],
+    })
+
+    const responseText = message.content[0].type === 'text' ? message.content[0].text.trim() : ''
+    const cleaned = responseText.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '')
+    return JSON.parse(cleaned)
   })
 }

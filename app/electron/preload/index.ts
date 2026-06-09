@@ -13,6 +13,7 @@ contextBridge.exposeInMainWorld('db', {
     get: () => invoke('db:user:get'),
     addXp: (amount: number, reason: string) => invoke('db:user:addXp', amount, reason),
     updateStreak: () => invoke('db:user:updateStreak'),
+    deductXp: (amount: number, reason: string) => invoke('db:user:deductXp', amount, reason),
     updateDailyGoal: (goal: number) => invoke('db:user:updateDailyGoal', goal),
   },
   words: {
@@ -27,6 +28,7 @@ contextBridge.exposeInMainWorld('db', {
     getEnriched: () => invoke('db:words:getEnriched'),
     recalculateImportance: () => invoke('db:words:recalculateImportance'),
     getGraphData: () => invoke('db:words:getGraphData'),
+    getByChinese: (chinese: string) => invoke('db:words:getByChinese', chinese),
   },
   cards: {
     getDue: (limit?: number) => invoke('db:cards:getDue', limit),
@@ -36,9 +38,10 @@ contextBridge.exposeInMainWorld('db', {
     update: (id: number, updates: unknown) => invoke('db:cards:update', id, updates),
     countDue: () => invoke('db:cards:countDue'),
     countByState: () => invoke('db:cards:countByState'),
+    getMastered: (limit?: number) => invoke('db:cards:getMastered', limit),
   },
   reviews: {
-    create: (review: unknown) => invoke('db:reviews:create', review),
+    create: (review: unknown, isMastered?: boolean) => invoke('db:reviews:create', review, isMastered),
     getRecent: (limit?: number) => invoke('db:reviews:getRecent', limit),
     getAccuracy7d: () => invoke('db:reviews:getAccuracy7d'),
   },
@@ -65,10 +68,16 @@ contextBridge.exposeInMainWorld('db', {
     getToday: () => invoke('db:stats:getToday'),
     getLast30Days: () => invoke('db:stats:getLast30Days'),
     getTotals: () => invoke('db:stats:getTotals'),
+    getWordLearningHistory: () => invoke('db:stats:getWordLearningHistory'),
+    getAllLanguagesHistory: () => invoke('db:stats:getAllLanguagesHistory'),
   },
   backup: {
     exportFull: () => invoke('db:exportFull'),
     importFull: (data: unknown) => invoke('db:importFull', data),
+  },
+  language: {
+    get: () => invoke<string>('db:language:get'),
+    set: (lang: string) => invoke('db:language:set', lang),
   },
 })
 
@@ -76,6 +85,7 @@ contextBridge.exposeInMainWorld('claudeAPI', {
   testKey: () => ipcRenderer.invoke('claude:testKey'),
   extractFromDocument: (docId: number) => ipcRenderer.invoke('claude:extractFromDocument', docId),
   extractFromText: (text: string) => ipcRenderer.invoke('claude:extractFromText', text),
+  identifyCharacter: (imageDataUrl: string) => ipcRenderer.invoke('claude:identifyCharacter', imageDataUrl),
 })
 
 contextBridge.exposeInMainWorld('importAPI', {
@@ -93,10 +103,10 @@ contextBridge.exposeInMainWorld('importAPI', {
 contextBridge.exposeInMainWorld('electronAPI', {
   platform: process.platform,
   widget: {
-    toggle:       () => ipcRenderer.invoke('widget:toggle'),
+    toggle:         () => ipcRenderer.invoke('widget:toggle'),
     setAlwaysOnTop: (v: boolean) => ipcRenderer.invoke('widget:setAlwaysOnTop', v),
-    setExpanded:  (v: boolean) => ipcRenderer.invoke('widget:setExpanded', v),
-    isOpen:       () => ipcRenderer.invoke('widget:isOpen'),
+    setExpanded:    (v: boolean) => ipcRenderer.invoke('widget:setExpanded', v),
+    isOpen:         () => ipcRenderer.invoke('widget:isOpen'),
   },
   window: {
     minimize: () => ipcRenderer.invoke('window:minimize'),
@@ -104,7 +114,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     close:    () => ipcRenderer.invoke('window:close'),
   },
   system: {
-    log: (msg: string, level: string) => ipcRenderer.invoke('system:log', msg, level),
+    log:     (msg: string, level: string) => ipcRenderer.invoke('system:log', msg, level),
     getLogs: () => ipcRenderer.invoke('system:getLogs'),
   },
 })

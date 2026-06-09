@@ -107,4 +107,5 @@ export interface Statistic {
   xp_earned: number
   study_time_ms: number
   new_words_learned: number
+  mastered_reviewed: number
 }

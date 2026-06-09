@@ -5,19 +5,12 @@ import ProgressBar from '../ui/ProgressBar'
 interface SessionSummaryProps {
   correct: number
   incorrect: number
-  xpEarned: number
+  total: number
   onRestart: () => void
   onExit: () => void
 }
 
-export default function SessionSummary({
-  correct,
-  incorrect,
-  xpEarned,
-  onRestart,
-  onExit,
-}: SessionSummaryProps) {
-  const total = correct + incorrect
+export default function SessionSummary({ correct, incorrect, total, onRestart, onExit }: SessionSummaryProps) {
   const accuracy = total > 0 ? Math.round((correct / total) * 100) : 0
   const isPerfect = incorrect === 0 && total > 0
 
@@ -54,15 +47,6 @@ export default function SessionSummary({
         <div className="pt-2 border-t border-surface-medium">
           <ProgressBar value={accuracy} color={accuracy >= 80 ? 'mint' : 'blue'} label="Accuracy" showValue={false} />
         </div>
-        <motion.div
-          className="flex items-center justify-center gap-2 bg-xp-gold/20 rounded-md py-2"
-          initial={{ scale: 0.8 }}
-          animate={{ scale: 1 }}
-          transition={{ delay: 0.3, type: 'spring', stiffness: 200 }}
-        >
-          <span className="text-lg">⭐</span>
-          <span className="font-bold text-amber-600">+{xpEarned} XP earned</span>
-        </motion.div>
       </div>
 
       <div className="flex gap-3 w-full">

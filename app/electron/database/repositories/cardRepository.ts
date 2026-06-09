@@ -62,6 +62,17 @@ export const cardRepository = {
     ).c
   },
 
+  getMastered(limit = 5): Card[] {
+    return getDb()
+      .prepare(
+        `SELECT * FROM cards
+         WHERE state = 'mastered'
+         ORDER BY RANDOM()
+         LIMIT ?`
+      )
+      .all(limit) as Card[]
+  },
+
   countByState(): Record<Card['state'], number> {
     const rows = getDb()
       .prepare('SELECT state, COUNT(*) as c FROM cards GROUP BY state')

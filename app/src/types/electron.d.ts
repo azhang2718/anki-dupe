@@ -1,4 +1,5 @@
 import type { User, Word, Card, Review, Achievement, Document, Statistic, EnrichedWord, ReadinessResult } from './db'
+import type { LanguageCode } from './languages'
 
 declare global {
   interface Window {
@@ -6,6 +7,7 @@ declare global {
       testKey(): Promise<{ ok: boolean; data?: boolean; error?: string }>
       extractFromDocument(docId: number): Promise<{ ok: boolean; data?: { wordsAdded: number; words: Word[] }; error?: string }>
       extractFromText(text: string): Promise<{ ok: boolean; data?: Word[]; error?: string }>
+      identifyCharacter(imageDataUrl: string): Promise<{ ok: boolean; data?: { chinese: string; pinyin: string; meaning: string; confidence: string }; error?: string }>
     }
     importAPI: {
       openDialog(type: 'files' | 'folder'): Promise<{ ok: boolean; data?: Document[]; error?: string }>
@@ -37,6 +39,7 @@ declare global {
         get(): Promise<User>
         addXp(amount: number, reason: string): Promise<User>
         updateStreak(): Promise<User>
+        deductXp(amount: number, reason: string): Promise<User>
         updateDailyGoal(goal: number): Promise<void>
       }
       words: {
@@ -51,10 +54,9 @@ declare global {
         getEnriched(): Promise<EnrichedWord[]>
         recalculateImportance(): Promise<{ updated: number }>
         getGraphData(): Promise<{
-          words: Array<{ id: number; chinese: string; pinyin: string; meaning: string; difficulty: number; importance_score: number; source_document_id: number | null; best_state: string }>
-          docs: Array<{ id: number; title: string }>
-          edges: Array<{ source: string; target: string; type: 'doc' | 'char' }>
+          words: Array<{ id: number; chinese: string; pinyin: string; meaning: string; difficulty: number; importance_score: number; category: string; best_state: string }>
         }>
+        getByChinese(chinese: string): Promise<Word | null>
       }
       cards: {
         getDue(limit?: number): Promise<Card[]>
@@ -64,9 +66,10 @@ declare global {
         update(id: number, updates: Partial<Card>): Promise<Card>
         countDue(): Promise<number>
         countByState(): Promise<Record<Card['state'], number>>
+        getMastered(limit?: number): Promise<Card[]>
       }
       reviews: {
-        create(review: Omit<Review, 'id' | 'reviewed_at'>): Promise<Review>
+        create(review: Omit<Review, 'id' | 'reviewed_at'>, isMastered?: boolean): Promise<Review>
         getRecent(limit?: number): Promise<Review[]>
         getAccuracy7d(): Promise<number>
       }
@@ -92,10 +95,16 @@ declare global {
         getToday(): Promise<Statistic | null>
         getLast30Days(): Promise<Statistic[]>
         getTotals(): Promise<{ totalReviewed: number; totalCorrect: number; totalXp: number; totalTimeMs: number }>
+        getWordLearningHistory(): Promise<{ newPerDay: { date: string; count: number }[]; masteredPerDay: { date: string; count: number }[] }>
+        getAllLanguagesHistory(): Promise<Record<string, { newPerDay: { date: string; count: number }[]; masteredPerDay: { date: string; count: number }[] }>>
       }
       backup: {
         exportFull(): Promise<any>
         importFull(data: any): Promise<{ ok: boolean }>
+      }
+      language: {
+        get(): Promise<string>
+        set(lang: string): Promise<string>
       }
     }
   }

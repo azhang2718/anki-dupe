@@ -2,13 +2,10 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import StatCard from '../components/ui/StatCard'
-import XpBar from '../components/ui/XpBar'
-import ProgressBar from '../components/ui/ProgressBar'
 import Card from '../components/ui/Card'
 import Button from '../components/ui/Button'
 import EmptyState from '../components/ui/EmptyState'
 import { SkeletonCard } from '../components/ui/SkeletonLoader'
-import type { User } from '../types/db'
 
 function getGreeting(): string {
   const h = new Date().getHours()
@@ -17,41 +14,31 @@ function getGreeting(): string {
   return 'Good evening'
 }
 
-const levelTitles: Record<number, string> = {
-  1: 'Beginner Reader', 5: 'Curious Reader', 10: 'Casual Reader',
-  25: 'Web Reader', 50: 'Novel Reader', 100: 'Character Sage',
-}
-
-function getLevelTitle(level: number): string {
-  const thresholds = Object.keys(levelTitles).map(Number).sort((a, b) => b - a)
-  return levelTitles[thresholds.find((t) => level >= t) ?? 1]
-}
-
 export default function DashboardPage() {
   const navigate = useNavigate()
-  const [user, setUser] = useState<User | null>(null)
   const [wordCount, setWordCount] = useState(0)
   const [learnedCount, setLearnedCount] = useState(0)
+  const [masteredCount, setMasteredCount] = useState(0)
   const [dueCount, setDueCount] = useState(0)
   const [accuracy, setAccuracy] = useState(0)
-  const [todayXp, setTodayXp] = useState(0)
+  const [streak, setStreak] = useState(0)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     Promise.all([
-      window.db.user.get(),
       window.db.words.count(),
       window.db.words.countLearned(),
+      window.db.cards.countByState(),
       window.db.cards.countDue(),
       window.db.reviews.getAccuracy7d(),
-      window.db.stats.getToday(),
-    ]).then(([u, wc, lc, dc, acc, todayStats]) => {
-      setUser(u)
-      setWordCount(wc)
-      setLearnedCount(lc)
-      setDueCount(dc)
-      setAccuracy(acc)
-      setTodayXp(todayStats?.xp_earned ?? 0)
+      window.db.user.get(),
+    ]).then(([wc, lc, states, dc, acc, user]) => {
+      setWordCount(wc as number)
+      setLearnedCount(lc as number)
+      setMasteredCount((states as Record<string, number>).mastered ?? 0)
+      setDueCount(dc as number)
+      setAccuracy(acc as number)
+      setStreak((user as { streak_days: number }).streak_days)
       setLoading(false)
     }).catch(() => setLoading(false))
   }, [])
@@ -60,24 +47,23 @@ export default function DashboardPage() {
     return (
       <div className="flex flex-col gap-6">
         <div className="h-8 w-48 bg-surface-medium rounded-md animate-pulse" />
-        <div className="grid grid-cols-3 gap-4">
-          <SkeletonCard /><SkeletonCard /><SkeletonCard />
-        </div>
+        <div className="grid grid-cols-3 gap-4"><SkeletonCard /><SkeletonCard /><SkeletonCard /></div>
       </div>
     )
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <motion.div
+      className="flex flex-col gap-6"
+      initial={{ opacity: 0, y: 8 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.25 }}
+    >
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-700">
-            {getGreeting()} ☀️
-          </h1>
-          <p className="text-slate-400 mt-0.5 text-sm">
-            {user ? getLevelTitle(user.level) : 'Your reading journey continues.'}
-          </p>
+          <h1 className="text-2xl font-semibold text-slate-700">{getGreeting()} ☀️</h1>
+          <p className="text-slate-400 mt-0.5 text-sm">Your reading journey continues.</p>
         </div>
         {dueCount > 0 && (
           <Button onClick={() => navigate('/review')} variant="primary">
@@ -86,46 +72,32 @@ export default function DashboardPage() {
         )}
       </div>
 
-      {/* Stats row */}
+      {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
-        <StatCard label="Words Learned" value={learnedCount} icon="📖" color="blue" subtext={wordCount > learnedCount ? `${wordCount} in library` : undefined} />
         <StatCard
-          label="Day Streak"
-          value={user ? `${user.streak_days} 🔥` : '0'}
-          icon="🔥"
-          color="gold"
-          subtext={user?.streak_days ? 'Keep it up!' : 'Start studying to build your streak'}
+          label="Words in Library"
+          value={wordCount}
+          icon="📖"
+          color="blue"
+          subtext={learnedCount > 0 ? `${learnedCount} studied` : undefined}
+        />
+        <StatCard
+          label="Mastered"
+          value={masteredCount}
+          icon="✅"
+          color="mint"
+          subtext={wordCount > 0 ? `${Math.round((masteredCount / wordCount) * 100)}% of library` : undefined}
         />
         <StatCard
           label="7-Day Accuracy"
           value={accuracy ? `${accuracy}%` : '—'}
-          icon="✨"
-          color="mint"
-          subtext="Review accuracy"
+          icon="🎯"
+          color="gold"
+          subtext={streak > 0 ? `${streak} day streak 🔥` : 'Start studying!'}
         />
       </div>
 
-      {/* XP progress */}
-      {user && (
-        <Card>
-          <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-semibold text-slate-600">Your Progress</span>
-            <span className="text-xs text-slate-400">{user.total_xp.toLocaleString()} total XP</span>
-          </div>
-          <XpBar totalXp={user.total_xp} level={user.level} />
-          <div className="mt-4 pt-4 border-t border-surface-medium">
-            <div className="flex justify-between text-xs text-slate-500 mb-1.5">
-              <span>Daily goal</span>
-              <span className={todayXp >= user.daily_xp_goal ? 'text-emerald-500 font-semibold' : ''}>
-                {todayXp >= user.daily_xp_goal ? '✓ Complete!' : `${todayXp} / ${user.daily_xp_goal} XP`}
-              </span>
-            </div>
-            <ProgressBar value={todayXp} max={user.daily_xp_goal} color={todayXp >= user.daily_xp_goal ? 'mint' : 'blue'} size="sm" />
-          </div>
-        </Card>
-      )}
-
-      {/* Empty state or quick actions */}
+      {/* Quick actions */}
       {wordCount === 0 ? (
         <Card>
           <EmptyState
@@ -138,18 +110,18 @@ export default function DashboardPage() {
         </Card>
       ) : (
         <div className="grid grid-cols-2 gap-4">
-          <Card onClick={() => navigate('/review')} className="hover:scale-[1.01] transition-transform">
+          <Card onClick={() => navigate('/review')}>
             <p className="text-2xl mb-2">🃏</p>
             <p className="font-semibold text-slate-700 text-sm">Review Cards</p>
-            <p className="text-slate-400 text-xs mt-0.5">{dueCount} cards due now</p>
+            <p className="text-slate-400 text-xs mt-0.5">{dueCount > 0 ? `${dueCount} cards due now` : 'All caught up!'}</p>
           </Card>
-          <Card onClick={() => navigate('/import')} className="hover:scale-[1.01] transition-transform">
+          <Card onClick={() => navigate('/import')}>
             <p className="text-2xl mb-2">📥</p>
             <p className="font-semibold text-slate-700 text-sm">Import Content</p>
             <p className="text-slate-400 text-xs mt-0.5">Add screenshots, PDFs, text</p>
           </Card>
         </div>
       )}
-    </div>
+    </motion.div>
   )
 }

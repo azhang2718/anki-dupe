@@ -1,5 +1,5 @@
 import { ipcMain } from 'electron'
-import { getDb } from '../database/db'
+import { getDb, getDbForLanguage, getActiveLanguage, switchLanguage } from '../database/db'
 import { createInitialCards } from '../utils/fsrs'
 import { checkAchievements } from '../services/achievementChecker'
 import { recalculateImportanceScores } from '../services/importanceService'
@@ -13,6 +13,7 @@ import { achievementRepository } from '../database/repositories/achievementRepos
 import { documentRepository } from '../database/repositories/documentRepository'
 import { settingsRepository } from '../database/repositories/settingsRepository'
 import { statisticsRepository } from '../database/repositories/statisticsRepository'
+import { LANGUAGE_CODES, type LanguageCode } from '../database/languages'
 
 function handle(channel: string, fn: (...args: unknown[]) => unknown) {
   ipcMain.handle(channel, (_event, ...args) => {
@@ -25,14 +26,54 @@ function handle(channel: string, fn: (...args: unknown[]) => unknown) {
 }
 
 export function registerDbHandlers(): void {
-  // User
+  // ─── Language ──────────────────────────────────────────────────────────────
+  handle('db:language:get', () => getActiveLanguage())
+
+  handle('db:language:set', (lang) => {
+    switchLanguage(lang as LanguageCode)
+    return lang
+  })
+
+  // Cross-language word learning history for statistics
+  handle('db:stats:getAllLanguagesHistory', () => {
+    const result: Record<string, { newPerDay: { date: string; count: number }[]; masteredPerDay: { date: string; count: number }[] }> = {}
+
+    for (const lang of LANGUAGE_CODES) {
+      try {
+        const db = getDbForLanguage(lang)
+        const newPerDay = db.prepare(`
+          SELECT date(min_review) as date, COUNT(*) as count
+          FROM (SELECT word_id, MIN(reviewed_at) as min_review FROM reviews GROUP BY word_id)
+          GROUP BY date(min_review)
+          ORDER BY date ASC
+        `).all() as { date: string; count: number }[]
+
+        const masteredPerDay = db.prepare(`
+          SELECT date(last_review) as date, COUNT(DISTINCT word_id) as count
+          FROM cards
+          WHERE state = 'mastered' AND last_review IS NOT NULL
+          GROUP BY date(last_review)
+          ORDER BY date ASC
+        `).all() as { date: string; count: number }[]
+
+        result[lang] = { newPerDay, masteredPerDay }
+      } catch {
+        result[lang] = { newPerDay: [], masteredPerDay: [] }
+      }
+    }
+
+    return result
+  })
+
+  // ─── User ──────────────────────────────────────────────────────────────────
   handle('db:user:get', () => userRepository.get())
   handle('db:user:addXp', (amount, reason) => userRepository.addXp(amount as number, reason as string))
   handle('db:user:updateStreak', () => userRepository.updateStreak())
   handle('db:user:updateDailyGoal', (goal) => userRepository.updateDailyGoal(goal as number))
 
-  // Words
+  // ─── Words ─────────────────────────────────────────────────────────────────
   handle('db:words:getAll', () => wordRepository.getAll())
+  handle('db:words:getByChinese', (chinese) => wordRepository.getByChinese(chinese as string))
   handle('db:words:getById', (id) => wordRepository.getById(id as number))
   handle('db:words:delete', (id) => wordRepository.delete(id as number))
   handle('db:words:upsert', (word) => wordRepository.upsert(word as Parameters<typeof wordRepository.upsert>[0]))
@@ -40,16 +81,12 @@ export function registerDbHandlers(): void {
   handle('db:words:countLearned', () => wordRepository.countLearned())
   handle('db:words:getTopByImportance', (limit) => wordRepository.getTopByImportance(limit as number))
 
-  // Upsert a word and atomically create its initial FSRS cards if new
   handle('db:words:upsertWithCards', (word) => {
     const db = getDb()
     const w = word as Parameters<typeof wordRepository.upsert>[0]
     return db.transaction(() => {
       const saved = wordRepository.upsert(w)
-      // Only create cards if this word has none yet
-      const existingCards = db
-        .prepare('SELECT id FROM cards WHERE word_id = ?')
-        .all(saved.id)
+      const existingCards = db.prepare('SELECT id FROM cards WHERE word_id = ?').all(saved.id)
       if (existingCards.length === 0) {
         const initialCards = createInitialCards(saved.id)
         for (const card of initialCards) {
@@ -69,7 +106,7 @@ export function registerDbHandlers(): void {
     })()
   })
 
-  // Cards
+  // ─── Cards ─────────────────────────────────────────────────────────────────
   handle('db:cards:getDue', (limit) => cardRepository.getDue(limit as number))
   handle('db:cards:getById', (id) => cardRepository.getById(id as number))
   handle('db:cards:getByWordId', (wordId) => cardRepository.getByWordId(wordId as number))
@@ -77,18 +114,30 @@ export function registerDbHandlers(): void {
   handle('db:cards:update', (id, updates) => cardRepository.update(id as number, updates as Parameters<typeof cardRepository.update>[1]))
   handle('db:cards:countDue', () => cardRepository.countDue())
   handle('db:cards:countByState', () => cardRepository.countByState())
+  handle('db:cards:getMastered', (limit) => cardRepository.getMastered(limit as number | undefined))
 
-  // Reviews
-  handle('db:reviews:create', (review) => reviewRepository.create(review as Parameters<typeof reviewRepository.create>[0]))
+  // ─── Reviews ───────────────────────────────────────────────────────────────
+  handle('db:reviews:create', (review, isMastered) =>
+    reviewRepository.create(
+      review as Parameters<typeof reviewRepository.create>[0],
+      (isMastered as boolean | undefined) ?? false
+    )
+  )
+  handle('db:user:deductXp', (amount, reason) => {
+    const db = getDb()
+    db.prepare('UPDATE users SET total_xp = MAX(0, total_xp - ?) WHERE id = 1').run(amount as number)
+    db.prepare('INSERT INTO xp_log (amount, reason) VALUES (?, ?)').run(-(amount as number), reason as string)
+    return userRepository.get()
+  })
   handle('db:reviews:getRecent', (limit) => reviewRepository.getRecent(limit as number))
   handle('db:reviews:getAccuracy7d', () => reviewRepository.getAccuracyLast7Days())
 
-  // Achievements
+  // ─── Achievements ──────────────────────────────────────────────────────────
   handle('db:achievements:getAll', () => achievementRepository.getAll())
   handle('db:achievements:getUnlocked', () => achievementRepository.getUnlocked())
   handle('db:achievements:unlock', (key) => achievementRepository.unlock(key as string))
 
-  // Documents
+  // ─── Documents ─────────────────────────────────────────────────────────────
   handle('db:documents:getAll', () => documentRepository.getAll())
   handle('db:documents:getById', (id) => documentRepository.getById(id as number))
   handle('db:documents:create', (doc) => documentRepository.create(doc as Parameters<typeof documentRepository.create>[0]))
@@ -96,28 +145,24 @@ export function registerDbHandlers(): void {
     documentRepository.updateStatus(id as number, status as Parameters<typeof documentRepository.updateStatus>[1], rawText as string | undefined)
   )
 
-  // Settings
+  // ─── Settings (now global, language-independent) ───────────────────────────
   handle('db:settings:get', (key) => settingsRepository.get(key as string))
   handle('db:settings:set', (key, value) => settingsRepository.set(key as string, value as string))
   handle('db:settings:getAll', () => settingsRepository.getAll())
 
-  // Gamification
+  // ─── Gamification ──────────────────────────────────────────────────────────
   handle('db:achievements:check', (ctx) => checkAchievements(ctx as Parameters<typeof checkAchievements>[0]))
 
-  // Statistics
+  // ─── Statistics ────────────────────────────────────────────────────────────
   handle('db:stats:getToday', () => statisticsRepository.getToday())
   handle('db:stats:getLast30Days', () => statisticsRepository.getLast30Days())
   handle('db:stats:getTotals', () => statisticsRepository.getTotals())
 
-  // Backup & Restoration
+  // ─── Backup & Restore ──────────────────────────────────────────────────────
   handle('db:exportFull', () => exportFullBackup())
+  handle('db:importFull', (data) => { importFullBackup(data); return { ok: true } })
 
-  handle('db:importFull', (data) => {
-    importFullBackup(data)
-    return { ok: true }
-  })
-
-  // Vocabulary intelligence
+  // ─── Vocabulary intelligence ───────────────────────────────────────────────
   handle('db:words:getEnriched', () => {
     const db = getDb()
     return db.prepare(`
@@ -137,8 +182,7 @@ export function registerDbHandlers(): void {
                  WHEN 4 THEN 'mastered' WHEN 3 THEN 'review'
                  WHEN 2 THEN 'learning' ELSE 'new' END AS best_state,
                MIN(due) AS next_due
-        FROM cards
-        GROUP BY word_id
+        FROM cards GROUP BY word_id
       ) cs ON cs.word_id = w.id
       LEFT JOIN (
         SELECT c.word_id,
@@ -156,16 +200,14 @@ export function registerDbHandlers(): void {
     updated: recalculateImportanceScores(),
   }))
 
-  // Knowledge graph data
+  // Knowledge graph / draw page data
   handle('db:words:getGraphData', () => {
     const db = getDb()
-
     interface WordRow {
       id: number; chinese: string; pinyin: string; meaning: string
       difficulty: number; importance_score: number; category: string
       best_state: string
     }
-
     const words = db.prepare(`
       SELECT w.id, w.chinese, w.pinyin, w.meaning, w.difficulty, w.importance_score,
              COALESCE(w.category, 'Other') AS category,
@@ -179,8 +221,28 @@ export function registerDbHandlers(): void {
       ORDER BY w.importance_score DESC
       LIMIT 300
     `).all() as WordRow[]
-
     return { words }
+  })
+
+  // Word learning history — active language only
+  handle('db:stats:getWordLearningHistory', () => {
+    const db = getDb()
+    const newPerDay = db.prepare(`
+      SELECT date(min_review) as date, COUNT(*) as count
+      FROM (SELECT word_id, MIN(reviewed_at) as min_review FROM reviews GROUP BY word_id)
+      GROUP BY date(min_review)
+      ORDER BY date ASC
+    `).all() as { date: string; count: number }[]
+
+    const masteredPerDay = db.prepare(`
+      SELECT date(last_review) as date, COUNT(DISTINCT word_id) as count
+      FROM cards
+      WHERE state = 'mastered' AND last_review IS NOT NULL
+      GROUP BY date(last_review)
+      ORDER BY date ASC
+    `).all() as { date: string; count: number }[]
+
+    return { newPerDay, masteredPerDay }
   })
 
   // Reading readiness

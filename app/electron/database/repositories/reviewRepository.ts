@@ -2,7 +2,7 @@ import { getDb } from '../db'
 import type { Review } from '../schema'
 
 export const reviewRepository = {
-  create(review: Omit<Review, 'id' | 'reviewed_at'>): Review {
+  create(review: Omit<Review, 'id' | 'reviewed_at'>, isMastered = false): Review {
     const db = getDb()
     const result = db
       .prepare(
@@ -14,21 +14,25 @@ export const reviewRepository = {
     // Update today's statistics
     const today = new Date().toISOString().slice(0, 10)
     db.prepare(
-      `INSERT INTO statistics (date, words_reviewed, words_correct, xp_earned, study_time_ms)
-       VALUES (?, 1, ?, ?, ?)
+      `INSERT INTO statistics
+         (date, words_reviewed, words_correct, xp_earned, study_time_ms, mastered_reviewed)
+       VALUES (?, 1, ?, ?, ?, ?)
        ON CONFLICT(date) DO UPDATE SET
-         words_reviewed = words_reviewed + 1,
-         words_correct  = words_correct  + ?,
-         xp_earned      = xp_earned      + ?,
-         study_time_ms  = study_time_ms  + ?`
+         words_reviewed   = words_reviewed   + 1,
+         words_correct    = words_correct    + ?,
+         xp_earned        = xp_earned        + ?,
+         study_time_ms    = study_time_ms    + ?,
+         mastered_reviewed = mastered_reviewed + ?`
     ).run(
       today,
       review.rating >= 3 ? 1 : 0,
       review.xp_earned,
       review.time_taken_ms,
+      isMastered ? 1 : 0,
       review.rating >= 3 ? 1 : 0,
       review.xp_earned,
-      review.time_taken_ms
+      review.time_taken_ms,
+      isMastered ? 1 : 0
     )
 
     return db

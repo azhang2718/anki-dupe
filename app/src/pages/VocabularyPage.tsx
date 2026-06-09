@@ -6,6 +6,7 @@ import Badge from '../components/ui/Badge'
 import Button from '../components/ui/Button'
 import { SkeletonCard } from '../components/ui/SkeletonLoader'
 import type { EnrichedWord } from '../types/db'
+import { LANGUAGE_CONFIGS, type LanguageCode, type LanguageConfig } from '../types/languages'
 
 type Filter = 'all' | 'new' | 'learning' | 'review' | 'mastered'
 type SortKey = 'importance' | 'difficulty_asc' | 'difficulty_desc' | 'newest' | 'due_soon' | 'struggling'
@@ -50,6 +51,7 @@ export default function VocabularyPage() {
   const [loading, setLoading] = useState(true)
   const [recalculating, setRecalculating] = useState(false)
   const [selected, setSelected] = useState<EnrichedWord | null>(null)
+  const [activeLang, setActiveLang] = useState<LanguageCode>('chinese')
 
   const load = useCallback(() => {
     window.db.words.getEnriched().then((ws) => {
@@ -58,7 +60,12 @@ export default function VocabularyPage() {
     })
   }, [])
 
-  useEffect(() => { load() }, [load])
+  useEffect(() => {
+    window.db.language.get()
+      .then((l) => setActiveLang((l ?? 'chinese') as LanguageCode))
+      .catch(() => null)
+    load()
+  }, [load])
 
   const recalculate = async () => {
     setRecalculating(true)
@@ -67,12 +74,14 @@ export default function VocabularyPage() {
     setRecalculating(false)
   }
 
+  const langConfig = LANGUAGE_CONFIGS[activeLang]
+
   const sorted = useMemo(() => {
     let list = words.filter((w) => {
       if (filter !== 'all' && w.card_state !== filter) return false
       if (search) {
         const q = search.toLowerCase()
-        return w.chinese.includes(q) || w.pinyin.toLowerCase().includes(q) || w.meaning.toLowerCase().includes(q)
+        return w.chinese.toLowerCase().includes(q) || w.pinyin.toLowerCase().includes(q) || w.meaning.toLowerCase().includes(q)
       }
       return true
     })
@@ -109,7 +118,9 @@ export default function VocabularyPage() {
       <div className="flex items-start justify-between">
         <div>
           <h1 className="text-2xl font-semibold text-slate-700">Vocabulary</h1>
-          <p className="text-slate-400 text-sm mt-0.5">{words.length} words in your library</p>
+          <p className="text-slate-400 text-sm mt-0.5">
+            {words.length} {langConfig.name} words in your library
+          </p>
         </div>
         <Button
           onClick={recalculate}
@@ -125,7 +136,7 @@ export default function VocabularyPage() {
       <input
         value={search}
         onChange={(e) => setSearch(e.target.value)}
-        placeholder="Search by Chinese, pinyin, or meaning…"
+        placeholder={`Search by ${langConfig.charLabel.toLowerCase()}, ${langConfig.readingLabel.toLowerCase()}, or meaning…`}
         className="w-full px-4 py-2.5 rounded-md border border-surface-dark bg-white text-slate-700 text-sm outline-none focus:border-ice-blue transition-colors"
       />
 
@@ -174,24 +185,26 @@ export default function VocabularyPage() {
               className="bg-white rounded-lg shadow-soft p-4 flex flex-col gap-2 cursor-pointer hover:shadow-float transition-shadow"
             >
               <div className="flex items-start justify-between gap-2">
-                <p className="font-chinese text-2xl font-bold text-slate-800">{word.chinese}</p>
+                <p
+                  className="text-2xl font-bold text-slate-800"
+                  style={{ fontFamily: langConfig.fontFamily }}
+                >
+                  {word.chinese}
+                </p>
                 <Badge color={stateBadgeColor[word.card_state]}>{word.card_state}</Badge>
               </div>
               <p className="text-slate-400 text-sm">{word.pinyin}</p>
               <p className="text-slate-600 text-sm font-medium leading-snug">{word.meaning}</p>
 
               <div className="flex items-center justify-between mt-1 pt-2 border-t border-surface-light">
-                {/* Difficulty dots */}
                 <div className="flex items-center gap-0.5">
                   {difficultyDots(word.difficulty)}
                 </div>
-                {/* Accuracy badge */}
                 {word.total_reviews > 0 && (
                   <span className={`text-[11px] font-medium ${accuracyColor(word.total_reviews, word.correct_reviews)}`}>
                     {Math.round((word.correct_reviews / word.total_reviews) * 100)}% acc
                   </span>
                 )}
-                {/* Importance score */}
                 <span className="text-[11px] text-slate-300">★{word.importance_score}</span>
               </div>
             </motion.div>
@@ -204,6 +217,7 @@ export default function VocabularyPage() {
         {selected && (
           <WordDetailModal
             word={selected}
+            langConfig={langConfig}
             onClose={() => setSelected(null)}
             onDelete={() => { setSelected(null); load() }}
           />
@@ -215,10 +229,12 @@ export default function VocabularyPage() {
 
 function WordDetailModal({
   word: w,
+  langConfig,
   onClose,
   onDelete
 }: {
   word: EnrichedWord
+  langConfig: LanguageConfig
   onClose: () => void
   onDelete: () => void
 }) {
@@ -249,8 +265,16 @@ function WordDetailModal({
 
         <div className="flex items-start justify-between mb-4">
           <div>
-            <p className="font-chinese text-4xl font-bold text-slate-800">{w.chinese}</p>
-            <p className="text-slate-400 text-sm mt-1">{w.pinyin}</p>
+            <p
+              className="text-4xl font-bold text-slate-800"
+              style={{ fontFamily: langConfig.fontFamily }}
+            >
+              {w.chinese}
+            </p>
+            <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest mt-2">
+              {langConfig.readingLabel}
+            </p>
+            <p className="text-slate-400 text-sm mt-0.5">{w.pinyin}</p>
           </div>
           <Badge color={stateBadgeColor[w.card_state]}>{w.card_state}</Badge>
         </div>
@@ -266,7 +290,9 @@ function WordDetailModal({
 
         {w.example_sentence && (
           <div className="bg-surface-light rounded-lg p-3 mb-4">
-            <p className="font-chinese text-slate-700">{w.example_sentence}</p>
+            <p className="text-slate-700" style={{ fontFamily: langConfig.fontFamily }}>
+              {w.example_sentence}
+            </p>
             {w.example_translation && (
               <p className="text-slate-400 text-xs mt-1">{w.example_translation}</p>
             )}
@@ -301,8 +327,8 @@ function WordDetailModal({
           <Button
             onClick={async () => {
               if (confirm(`Are you sure you want to delete "${w.chinese}"? This cannot be undone.`)) {
-                 await window.db.words.delete(w.id)
-                 onDelete()
+                await window.db.words.delete(w.id)
+                onDelete()
               }
             }}
             variant="ghost"

@@ -1,43 +1,13 @@
-import { useEffect, useRef } from 'react'
-import { useGamificationStore } from '../stores/gamificationStore'
-import AchievementToast from './ui/AchievementToast'
-import LevelUpOverlay from './ui/LevelUpOverlay'
+import { useEffect } from 'react'
 
 /**
- * Mounts globally inside Layout.
- * - Shows AchievementToast queue
- * - Shows LevelUpOverlay
- * - Polls streak update on mount
+ * Runs on mount to update the user's study streak.
+ * Achievements and XP have been removed.
  */
 export default function GamificationProvider() {
-  const store = useGamificationStore()
-  const prevLevel = useRef<number | null>(null)
-
-  // Update streak on app load and check for level changes
   useEffect(() => {
-    async function init() {
-      const user = await window.db.user.updateStreak()
-      prevLevel.current = user.level
-
-      // Check achievements on launch (streak milestones, etc.)
-      const newAchievements = await window.db.achievements.check({
-        streakDays: user.streak_days,
-      })
-      store.enqueueAchievements(newAchievements)
-    }
-    init()
+    window.db.user.updateStreak().catch(() => null)
   }, [])
 
-  return (
-    <>
-      <AchievementToast
-        achievement={store.currentToast}
-        onDismiss={store.dismissToast}
-      />
-      <LevelUpOverlay
-        level={store.levelUpLevel}
-        onDismiss={store.dismissLevelUp}
-      />
-    </>
-  )
+  return null
 }
