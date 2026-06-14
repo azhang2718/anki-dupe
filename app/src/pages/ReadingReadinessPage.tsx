@@ -38,10 +38,10 @@ function ScoreRing({ score }: { score: number }) {
 }
 
 function readinessLabel(score: number): { label: string; color: string; emoji: string } {
-  if (score >= 90) return { label: 'Ready to read!',      color: 'text-emerald-600', emoji: '🎉' }
+  if (score >= 90) return { label: 'Ready to read!',      color: 'text-emerald-400', emoji: '🎉' }
   if (score >= 70) return { label: 'Almost ready',        color: 'text-emerald-500', emoji: '📗' }
   if (score >= 50) return { label: 'Getting there',       color: 'text-amber-500',   emoji: '📙' }
-  if (score >= 25) return { label: 'Keep studying',       color: 'text-amber-600',   emoji: '📖' }
+  if (score >= 25) return { label: 'Keep studying',       color: 'text-amber-400',   emoji: '📖' }
   return                  { label: 'Start with basics',   color: 'text-rose-500',    emoji: '🌱' }
 }
 
@@ -76,7 +76,7 @@ export default function ReadingReadinessPage() {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-4">
         <p className="text-4xl">⚠️</p>
-        <p className="text-slate-600 font-medium">Analysis failed</p>
+        <p className="text-slate-300 font-medium">Analysis failed</p>
         <p className="text-slate-400 text-sm text-center max-w-sm">{error}</p>
         <Button onClick={() => navigate('/import')} variant="secondary">Back to Import</Button>
       </div>
@@ -97,14 +97,14 @@ export default function ReadingReadinessPage() {
       {/* Back */}
       <button
         onClick={() => navigate('/import')}
-        className="text-sm text-slate-400 hover:text-slate-600 flex items-center gap-1 w-fit"
+        className="text-sm text-slate-400 hover:text-slate-300 flex items-center gap-1 w-fit"
       >
         ← Back to Import
       </button>
 
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-semibold text-slate-700">Reading Readiness</h1>
+        <h1 className="text-2xl font-semibold text-slate-200">Reading Readiness</h1>
         {doc && <p className="text-slate-400 text-sm mt-0.5 truncate">{doc.title}</p>}
       </div>
 
@@ -117,9 +117,9 @@ export default function ReadingReadinessPage() {
               <span className="text-2xl">{emoji}</span>
               <span className={`text-lg font-semibold ${color}`}>{label}</span>
             </div>
-            <p className="text-slate-500 text-sm">
-              You know <span className="font-semibold text-slate-700">{result.knownCount}</span> of{' '}
-              <span className="font-semibold text-slate-700">{result.totalVocabFound}</span> vocabulary
+            <p className="text-slate-400 text-sm">
+              You know <span className="font-semibold text-slate-200">{result.knownCount}</span> of{' '}
+              <span className="font-semibold text-slate-200">{result.totalVocabFound}</span> vocabulary
               words found in this document.
             </p>
             {result.totalVocabFound === 0 && (
@@ -134,20 +134,20 @@ export default function ReadingReadinessPage() {
       {/* Progress breakdown */}
       {result.totalVocabFound > 0 && (
         <Card>
-          <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">
+          <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest mb-3">
             Vocabulary Breakdown
           </p>
           <div className="flex flex-col gap-3">
             <div>
               <div className="flex justify-between text-xs mb-1">
-                <span className="text-slate-600">Known words</span>
-                <span className="text-emerald-600 font-medium">{result.knownCount} ({result.comprehensionScore}%)</span>
+                <span className="text-slate-300">Known words</span>
+                <span className="text-emerald-400 font-medium">{result.knownCount} ({result.comprehensionScore}%)</span>
               </div>
               <ProgressBar value={result.knownCount} max={result.totalVocabFound} color="mint" size="sm" />
             </div>
             <div>
               <div className="flex justify-between text-xs mb-1">
-                <span className="text-slate-600">Still learning</span>
+                <span className="text-slate-300">Still learning</span>
                 <span className="text-amber-500 font-medium">
                   {result.totalVocabFound - result.knownCount} ({100 - result.comprehensionScore}%)
                 </span>
@@ -182,12 +182,12 @@ export default function ReadingReadinessPage() {
               <motion.div
                 key={w.id}
                 layout
-                className="flex items-center gap-3 px-4 py-3 bg-white rounded-lg border border-surface-medium shadow-soft"
+                className="flex items-center gap-3 px-4 py-3 cosmic-panel rounded-lg border border-surface-medium shadow-soft"
               >
-                <span className="font-chinese text-xl font-bold text-slate-800 w-16 shrink-0">{w.chinese}</span>
+                <span className="font-chinese text-xl font-bold text-slate-100 w-16 shrink-0">{w.chinese}</span>
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-slate-400">{w.pinyin}</p>
-                  <p className="text-sm text-slate-600 font-medium truncate">{w.meaning}</p>
+                  <p className="text-sm text-slate-300 font-medium truncate">{w.meaning}</p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
                   <span className="text-[11px] text-slate-300">★{w.importance_score}</span>
@@ -212,8 +212,8 @@ export default function ReadingReadinessPage() {
           <div className="flex items-center gap-3">
             <span className="text-3xl">🎉</span>
             <div>
-              <p className="font-semibold text-emerald-700">You're ready to read this!</p>
-              <p className="text-emerald-600 text-sm mt-0.5">
+              <p className="font-semibold text-emerald-400">You're ready to read this!</p>
+              <p className="text-emerald-400 text-sm mt-0.5">
                 You know {result.comprehensionScore}% of the vocabulary. Give it a try!
               </p>
             </div>

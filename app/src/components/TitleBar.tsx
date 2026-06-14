@@ -10,10 +10,10 @@ export default function TitleBar() {
   }
 
   return (
-    <div className="drag-region h-9 flex items-center justify-between px-4 bg-white/80 border-b border-surface-medium shrink-0">
+    <div className="drag-region h-9 flex items-center justify-between px-4 cosmic-panel border-b border-white/10 shrink-0">
       <div className="flex items-center gap-2">
         <Translate size={15} weight="fill" className="text-slate-400" />
-        <span className="text-sm font-semibold text-slate-500 select-none">Anki Dupe</span>
+        <span className="text-sm font-semibold text-slate-400 select-none">Anki Dupe</span>
       </div>
       <div className="no-drag flex items-center gap-3">
         <button
@@ -21,8 +21,8 @@ export default function TitleBar() {
           title={widgetOpen ? 'Close widget' : 'Open floating widget'}
           className={`flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-md transition-colors ${
             widgetOpen
-              ? 'bg-ice-blue text-slate-700'
-              : 'bg-surface-medium text-slate-500 hover:bg-silver-blue'
+              ? 'bg-ice-blue text-slate-200'
+              : 'bg-surface-medium text-slate-400 hover:bg-silver-blue'
           }`}
         >
           {widgetOpen

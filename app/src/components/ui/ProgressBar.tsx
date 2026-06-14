@@ -34,7 +34,7 @@ export default function ProgressBar({
     <div className="w-full">
       {(label || showValue) && (
         <div className="flex justify-between mb-1.5">
-          {label && <span className="text-xs text-slate-500">{label}</span>}
+          {label && <span className="text-xs text-slate-400">{label}</span>}
           {showValue && (
             <span className="text-xs text-slate-400">
               {value} / {max}

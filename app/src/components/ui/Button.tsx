@@ -16,11 +16,11 @@ interface ButtonProps {
 }
 
 const variantClasses: Record<Variant, string> = {
-  primary:   'bg-ice-blue text-slate-700 hover:bg-focus-blue hover:text-white shadow-soft',
-  secondary: 'bg-surface-medium text-slate-600 hover:bg-silver-blue hover:text-slate-700',
-  ghost:     'bg-transparent text-slate-500 hover:bg-surface-medium hover:text-slate-700',
-  success:   'bg-success-mint text-slate-700 hover:brightness-95',
-  danger:    'bg-error-pink text-slate-700 hover:brightness-95',
+  primary:   'bg-ice-blue text-slate-200 hover:bg-focus-blue hover:text-white shadow-soft',
+  secondary: 'bg-surface-medium text-slate-300 hover:bg-silver-blue hover:text-slate-200',
+  ghost:     'bg-transparent text-slate-400 hover:bg-surface-medium hover:text-slate-200',
+  success:   'bg-success-mint text-slate-200 hover:brightness-95',
+  danger:    'bg-error-pink text-slate-200 hover:brightness-95',
 }
 
 const sizeClasses: Record<Size, string> = {

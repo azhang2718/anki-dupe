@@ -31,7 +31,7 @@ export default function LevelUpOverlay({ level, onDismiss }: LevelUpOverlayProps
             onClick={onDismiss}
           />
           <motion.div
-            className="fixed top-1/2 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-4 bg-white rounded-lg shadow-modal px-10 py-8 text-center"
+            className="fixed top-1/2 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-4 cosmic-panel rounded-lg shadow-modal px-10 py-8 text-center"
             initial={{ opacity: 0, scale: 0.8, y: '-45%' }}
             animate={{ opacity: 1, scale: 1, y: '-50%' }}
             exit={{ opacity: 0, scale: 0.9, y: '-45%' }}
@@ -47,8 +47,8 @@ export default function LevelUpOverlay({ level, onDismiss }: LevelUpOverlayProps
             </motion.div>
             <div>
               <p className="text-xs font-semibold text-slate-400 uppercase tracking-widest">Level Up!</p>
-              <p className="text-4xl font-bold text-slate-800 mt-1">Level {level}</p>
-              <p className="text-base text-slate-500 mt-1">{getLevelTitle(level)}</p>
+              <p className="text-4xl font-bold text-slate-100 mt-1">Level {level}</p>
+              <p className="text-base text-slate-400 mt-1">{getLevelTitle(level)}</p>
             </div>
             <motion.div
               className="px-4 py-2 bg-xp-gold/30 rounded-md"
@@ -56,11 +56,11 @@ export default function LevelUpOverlay({ level, onDismiss }: LevelUpOverlayProps
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3 }}
             >
-              <p className="text-sm font-semibold text-amber-600">Keep studying to reach the next level!</p>
+              <p className="text-sm font-semibold text-amber-400">Keep studying to reach the next level!</p>
             </motion.div>
             <button
               onClick={onDismiss}
-              className="no-drag text-xs text-slate-400 hover:text-slate-600 mt-1"
+              className="no-drag text-xs text-slate-400 hover:text-slate-300 mt-1"
             >
               Tap to continue
             </button>

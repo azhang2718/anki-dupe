@@ -55,11 +55,11 @@ export default function CardMCQ({ word, allWords, activeLang, onRate, onPenalize
   return (
     <div className="flex flex-col items-center gap-5 w-full max-w-md mx-auto">
       {/* Prompt card */}
-      <div className="w-full bg-white rounded-xl shadow-float px-8 py-7 flex flex-col items-center gap-2 min-h-36">
+      <div className="w-full cosmic-panel rounded-xl shadow-float px-8 py-7 flex flex-col items-center gap-2 min-h-36">
         <p className="text-[11px] font-semibold text-slate-400 uppercase tracking-widest">
           Which {langConfig.charLabel.toLowerCase()} means…
         </p>
-        <p className="text-2xl font-semibold text-slate-800 text-center leading-snug mt-1">
+        <p className="text-2xl font-semibold text-slate-100 text-center leading-snug mt-1">
           {word.meaning}
         </p>
         {word.part_of_speech && (
@@ -75,13 +75,13 @@ export default function CardMCQ({ word, allWords, activeLang, onRate, onPenalize
 
           let classes = 'border-2 transition-all duration-150'
           if (!answered) {
-            classes += ' bg-white hover:bg-surface-light border-surface-medium hover:border-ice-blue hover:shadow-soft cursor-pointer'
+            classes += ' bg-surface-medium hover:bg-surface-light border-surface-medium hover:border-ice-blue hover:shadow-soft cursor-pointer'
           } else if (isCorrectChoice) {
             classes += ' bg-success-mint/25 border-success-mint shadow-none'
           } else if (isChosen) {
             classes += ' bg-error-pink/25 border-error-pink shadow-none'
           } else {
-            classes += ' bg-white border-surface-medium opacity-40 cursor-default'
+            classes += ' bg-surface-medium border-surface-medium opacity-40 cursor-default'
           }
 
           return (
@@ -93,7 +93,7 @@ export default function CardMCQ({ word, allWords, activeLang, onRate, onPenalize
               className={`no-drag flex flex-col items-center justify-center gap-1 rounded-xl py-5 px-3 ${classes}`}
             >
               <span
-                className="text-3xl font-bold text-slate-800 leading-none"
+                className="text-3xl font-bold text-slate-100 leading-none"
                 style={{ fontFamily: langConfig.fontFamily }}
               >
                 {choice.chinese}
@@ -104,7 +104,7 @@ export default function CardMCQ({ word, allWords, activeLang, onRate, onPenalize
                   initial={{ opacity: 0, y: 3 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.05 }}
-                  className="text-[11px] text-slate-500 tracking-wide mt-0.5"
+                  className="text-[11px] text-slate-400 tracking-wide mt-0.5"
                 >
                   {choice.pinyin}
                 </motion.span>
@@ -120,7 +120,7 @@ export default function CardMCQ({ word, allWords, activeLang, onRate, onPenalize
           initial={{ opacity: 0, y: 4 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.18 }}
-          className={`text-sm font-medium text-center ${correct ? 'text-emerald-600' : 'text-rose-500'}`}
+          className={`text-sm font-medium text-center ${correct ? 'text-emerald-400' : 'text-rose-500'}`}
         >
           {correct
             ? `✓ Correct! — ${word.pinyin}`

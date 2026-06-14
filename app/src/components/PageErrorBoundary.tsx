@@ -29,8 +29,8 @@ class PageErrorBoundaryInner extends Component<Props, State> {
         <div className="flex items-center justify-center min-h-[50vh] p-6">
           <Card className="max-w-md w-full text-center py-10">
             <div className="text-4xl mb-4">⚠️</div>
-            <h2 className="text-lg font-bold text-slate-800 mb-2">This page failed to load</h2>
-            <p className="text-sm text-slate-500 mb-4">
+            <h2 className="text-lg font-bold text-slate-100 mb-2">This page failed to load</h2>
+            <p className="text-sm text-slate-400 mb-4">
               Try another page from the sidebar, or reload the app.
             </p>
             {this.state.error && (

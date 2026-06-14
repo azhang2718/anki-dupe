@@ -23,7 +23,7 @@ export default function SessionSummary({ correct, incorrect, total, onRestart, o
     >
       <div>
         <p className="text-5xl mb-3">{isPerfect ? '🌟' : accuracy >= 70 ? '✨' : '💪'}</p>
-        <h2 className="text-2xl font-bold text-slate-700">
+        <h2 className="text-2xl font-bold text-slate-200">
           {isPerfect ? 'Perfect Session!' : 'Session Complete'}
         </h2>
         <p className="text-slate-400 text-sm mt-1">
@@ -31,17 +31,17 @@ export default function SessionSummary({ correct, incorrect, total, onRestart, o
         </p>
       </div>
 
-      <div className="w-full bg-white rounded-lg shadow-soft p-6 flex flex-col gap-4">
+      <div className="w-full cosmic-panel rounded-lg shadow-soft p-6 flex flex-col gap-4">
         <div className="flex justify-between text-sm">
-          <span className="text-slate-500">Cards reviewed</span>
-          <span className="font-semibold text-slate-700">{total}</span>
+          <span className="text-slate-400">Cards reviewed</span>
+          <span className="font-semibold text-slate-200">{total}</span>
         </div>
         <div className="flex justify-between text-sm">
-          <span className="text-slate-500">Correct</span>
-          <span className="font-semibold text-emerald-600">{correct}</span>
+          <span className="text-slate-400">Correct</span>
+          <span className="font-semibold text-emerald-400">{correct}</span>
         </div>
         <div className="flex justify-between text-sm">
-          <span className="text-slate-500">Incorrect</span>
+          <span className="text-slate-400">Incorrect</span>
           <span className="font-semibold text-rose-500">{incorrect}</span>
         </div>
         <div className="pt-2 border-t border-surface-medium">

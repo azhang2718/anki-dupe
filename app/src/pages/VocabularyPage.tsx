@@ -124,7 +124,7 @@ export default function VocabularyPage() {
   if (loading) {
     return (
       <div className="flex flex-col gap-4">
-        <div className="h-8 w-40 bg-surface-medium rounded-md animate-pulse" />
+        <div className="h-8 w-40 cosmic-panel rounded-md animate-pulse" />
         <div className="grid grid-cols-2 gap-3">
           {Array.from({ length: 6 }).map((_, i) => <SkeletonCard key={i} />)}
         </div>
@@ -137,7 +137,7 @@ export default function VocabularyPage() {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-700">Vocabulary</h1>
+          <h1 className="text-2xl font-semibold text-slate-200">Vocabulary</h1>
           <p className="text-slate-400 text-sm mt-0.5">
             {words.length} {langConfig.name} words in your library
           </p>
@@ -149,7 +149,7 @@ export default function VocabularyPage() {
               variant="ghost"
               size="sm"
               disabled={cleaningUp}
-              className="text-rose-400 hover:text-rose-500 hover:bg-rose-50"
+              className="text-rose-400 hover:text-rose-500 hover:bg-rose-900/20"
             >
               {cleaningUp ? 'Removing…' : `✕ Remove ${invalidCount} non-${langConfig.name}`}
             </Button>
@@ -170,7 +170,7 @@ export default function VocabularyPage() {
         value={search}
         onChange={(e) => setSearch(e.target.value)}
         placeholder={`Search by ${langConfig.charLabel.toLowerCase()}, ${langConfig.readingLabel.toLowerCase()}, or meaning…`}
-        className="w-full px-4 py-2.5 rounded-md border border-surface-dark bg-white text-slate-700 text-sm outline-none focus:border-ice-blue transition-colors"
+        className="w-full px-4 py-2.5 rounded-md border border-surface-dark bg-surface-medium text-slate-200 text-sm outline-none focus:border-ice-blue transition-colors"
       />
 
       {/* Filter + Sort row */}
@@ -182,7 +182,7 @@ export default function VocabularyPage() {
               onClick={() => setFilter(f)}
               className={[
                 'no-drag px-3 py-1.5 rounded-full text-xs font-medium transition-colors',
-                filter === f ? 'bg-ice-blue text-slate-700' : 'bg-surface-medium text-slate-500 hover:bg-silver-blue',
+                filter === f ? 'bg-ice-blue text-slate-200' : 'bg-surface-medium text-slate-400 hover:bg-silver-blue',
               ].join(' ')}
             >
               {filterLabels[f]}
@@ -192,7 +192,7 @@ export default function VocabularyPage() {
         <select
           value={sort}
           onChange={(e) => setSort(e.target.value as SortKey)}
-          className="no-drag text-xs border border-surface-dark rounded-md px-2 py-1.5 bg-white text-slate-600 outline-none focus:border-ice-blue"
+          className="no-drag text-xs border border-surface-dark rounded-md px-2 py-1.5 bg-surface-medium text-slate-300 outline-none focus:border-ice-blue"
         >
           {(Object.keys(sortLabels) as SortKey[]).map((k) => (
             <option key={k} value={k}>{sortLabels[k]}</option>
@@ -215,11 +215,11 @@ export default function VocabularyPage() {
               key={word.id}
               layout
               onClick={() => setSelected(word)}
-              className="bg-white rounded-lg shadow-soft p-4 flex flex-col gap-2 cursor-pointer hover:shadow-float transition-shadow"
+              className="cosmic-panel rounded-lg shadow-soft p-4 flex flex-col gap-2 cursor-pointer hover:shadow-float transition-shadow"
             >
               <div className="flex items-start justify-between gap-2">
                 <p
-                  className="text-2xl font-bold text-slate-800"
+                  className="text-2xl font-bold text-slate-100"
                   style={{ fontFamily: langConfig.fontFamily }}
                 >
                   {word.chinese}
@@ -227,7 +227,7 @@ export default function VocabularyPage() {
                 <Badge color={stateBadgeColor[word.card_state]}>{word.card_state}</Badge>
               </div>
               <p className="text-slate-400 text-sm">{word.pinyin}</p>
-              <p className="text-slate-600 text-sm font-medium leading-snug">{word.meaning}</p>
+              <p className="text-slate-300 text-sm font-medium leading-snug">{word.meaning}</p>
 
               <div className="flex items-center justify-between mt-1 pt-2 border-t border-surface-light">
                 <div className="flex items-center gap-0.5">
@@ -287,7 +287,7 @@ function WordDetailModal({
       />
       {/* Sheet */}
       <motion.div
-        className="fixed bottom-0 left-0 right-0 z-50 bg-white rounded-t-2xl shadow-modal p-6 pb-8 max-w-lg mx-auto"
+        className="fixed bottom-0 left-0 right-0 z-50 cosmic-panel rounded-t-2xl shadow-modal p-6 pb-8 max-w-lg mx-auto"
         initial={{ y: '100%' }}
         animate={{ y: 0 }}
         exit={{ y: '100%' }}
@@ -299,7 +299,7 @@ function WordDetailModal({
         <div className="flex items-start justify-between mb-4">
           <div>
             <p
-              className="text-4xl font-bold text-slate-800"
+              className="text-4xl font-bold text-slate-100"
               style={{ fontFamily: langConfig.fontFamily }}
             >
               {w.chinese}
@@ -312,18 +312,18 @@ function WordDetailModal({
           <Badge color={stateBadgeColor[w.card_state]}>{w.card_state}</Badge>
         </div>
 
-        <p className="text-slate-700 font-medium mb-4">{w.meaning}</p>
+        <p className="text-slate-200 font-medium mb-4">{w.meaning}</p>
 
         {w.part_of_speech && (
           <p className="text-xs text-slate-400 mb-3">
-            <span className="font-semibold text-slate-500">Part of speech: </span>
+            <span className="font-semibold text-slate-400">Part of speech: </span>
             {w.part_of_speech}
           </p>
         )}
 
         {w.example_sentence && (
           <div className="bg-surface-light rounded-lg p-3 mb-4">
-            <p className="text-slate-700" style={{ fontFamily: langConfig.fontFamily }}>
+            <p className="text-slate-200" style={{ fontFamily: langConfig.fontFamily }}>
               {w.example_sentence}
             </p>
             {w.example_translation && (
@@ -365,7 +365,7 @@ function WordDetailModal({
               }
             }}
             variant="ghost"
-            className="text-rose-400 hover:text-rose-500 hover:bg-rose-50"
+            className="text-rose-400 hover:text-rose-500 hover:bg-rose-900/20"
           >
             🗑️
           </Button>
@@ -378,7 +378,7 @@ function WordDetailModal({
 function StatPill({ label, value, sub, highlight }: { label: string; value: string; sub?: string; highlight?: boolean }) {
   return (
     <div className="bg-surface-light rounded-lg p-3 text-center">
-      <p className={`text-sm font-semibold ${highlight ? 'text-rose-500' : 'text-slate-700'}`}>{value}</p>
+      <p className={`text-sm font-semibold ${highlight ? 'text-rose-500' : 'text-slate-200'}`}>{value}</p>
       <p className="text-[11px] text-slate-400 mt-0.5">{label}</p>
       {sub && <p className="text-[10px] text-slate-300 mt-0.5">{sub}</p>}
     </div>

@@ -18,15 +18,15 @@ export default function CardCloze({ word, isChallenge, onRate }: CardClozeProps)
 
   return (
     <div className="flex flex-col items-center gap-6 w-full max-w-md mx-auto">
-      <div className="w-full bg-white rounded-lg shadow-float p-8 flex flex-col items-center gap-4 min-h-48">
+      <div className="w-full cosmic-panel rounded-lg shadow-float p-8 flex flex-col items-center gap-4 min-h-48">
         {isChallenge && (
-          <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-xp-gold/15 text-amber-600 border border-xp-gold/25 self-start">
+          <span className="text-[10px] font-semibold px-2.5 py-1 rounded-full bg-xp-gold/15 text-amber-400 border border-xp-gold/25 self-start">
             ⚡ Mastered — stay sharp
           </span>
         )}
         <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">Fill in the blank</p>
 
-        <p className="font-chinese text-2xl text-slate-700 text-center leading-relaxed">
+        <p className="font-chinese text-2xl text-slate-200 text-center leading-relaxed">
           {clozed}
         </p>
 
@@ -37,14 +37,14 @@ export default function CardCloze({ word, isChallenge, onRate }: CardClozeProps)
             animate={{ opacity: 1, y: 0 }}
           >
             <p
-              className="font-chinese text-4xl font-bold text-slate-800"
+              className="font-chinese text-4xl font-bold text-slate-100"
               style={{ textShadow: '0 2px 12px rgba(149,240,192,0.5)' }}
             >
               {word.chinese}
             </p>
             <p className="text-slate-400 text-base">{word.pinyin}</p>
             {word.example_sentence && (
-              <p className="font-chinese text-sm text-slate-500 mt-1">{word.example_sentence}</p>
+              <p className="font-chinese text-sm text-slate-400 mt-1">{word.example_sentence}</p>
             )}
           </motion.div>
         )}
@@ -71,13 +71,13 @@ export default function CardCloze({ word, isChallenge, onRate }: CardClozeProps)
             onClick={() => onRate(2)}
             className="no-drag flex flex-col items-center gap-1 bg-xp-gold/20 hover:bg-xp-gold/40 border border-xp-gold/30 rounded-md py-3 transition-colors"
           >
-            <span className="text-sm font-semibold text-amber-600">Partial</span>
+            <span className="text-sm font-semibold text-amber-400">Partial</span>
           </button>
           <button
             onClick={() => onRate(4)}
             className="no-drag flex flex-col items-center gap-1 bg-success-mint/20 hover:bg-success-mint/40 border border-success-mint/30 rounded-md py-3 transition-colors"
           >
-            <span className="text-sm font-semibold text-emerald-600">Got it</span>
+            <span className="text-sm font-semibold text-emerald-400">Got it</span>
           </button>
         </motion.div>
       )}

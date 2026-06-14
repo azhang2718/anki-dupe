@@ -1,6 +1,6 @@
 {
   "name": "anki-dupe",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Chinese vocabulary learning desktop companion",
   "main": "out/main/index.js",
   "author": "Ronny",

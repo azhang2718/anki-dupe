@@ -4,17 +4,18 @@ export default {
   theme: {
     extend: {
       colors: {
-        'ice-blue': '#A9D6FF',
-        'sky-blue': '#D7EEFF',
-        'surface-light': '#F8FBFF',
-        'surface-medium': '#EEF4FA',
-        'surface-dark': '#DDEAF5',
-        'silver-blue': '#D4E1EE',
+        'ice-blue': '#8B9CFF',
+        'sky-blue': '#3A3A7A',
+        'surface-light': '#0A0E2A',
+        'surface-medium': '#1A1F45',
+        'surface-dark': '#272C5E',
+        'silver-blue': '#3C4380',
         'xp-gold': '#FFD866',
         'achievement-gold': '#FFC857',
         'success-mint': '#95F0C0',
-        'focus-blue': '#7CB9FF',
+        'focus-blue': '#A5B4FC',
         'error-pink': '#FFB6C1',
+        'dream-purple': '#6D5AA8',
       },
       fontFamily: {
         sans: ['Geist', 'SF Pro Display', 'system-ui', 'sans-serif'],

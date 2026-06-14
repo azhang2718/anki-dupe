@@ -35,9 +35,9 @@ export default function CardEnToZh({ word, allWords, onRate }: CardEnToZhProps) 
 
   return (
     <div className="flex flex-col items-center gap-6 w-full max-w-md mx-auto">
-      <div className="w-full bg-white rounded-lg shadow-float p-8 flex flex-col items-center gap-2 min-h-40">
+      <div className="w-full cosmic-panel rounded-lg shadow-float p-8 flex flex-col items-center gap-2 min-h-40">
         <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">Which character means…</p>
-        <p className="text-2xl font-semibold text-slate-700 text-center">{word.meaning}</p>
+        <p className="text-2xl font-semibold text-slate-200 text-center">{word.meaning}</p>
         {word.part_of_speech && (
           <p className="text-xs text-slate-400 italic">{word.part_of_speech}</p>
         )}
@@ -46,11 +46,11 @@ export default function CardEnToZh({ word, allWords, onRate }: CardEnToZhProps) 
       <div className="grid grid-cols-2 gap-3 w-full">
         {choices.map((choice) => {
           const isThis = choice === word.chinese
-          let bg = 'bg-white hover:bg-surface-light border-surface-medium hover:border-ice-blue'
+          let bg = 'bg-surface-medium hover:bg-surface-light border-surface-medium hover:border-ice-blue'
           if (selected) {
             if (isThis) bg = 'bg-success-mint/30 border-success-mint'
             else if (choice === selected) bg = 'bg-error-pink/30 border-error-pink'
-            else bg = 'bg-white border-surface-medium opacity-50'
+            else bg = 'bg-surface-medium border-surface-medium opacity-50'
           }
 
           return (
@@ -70,7 +70,7 @@ export default function CardEnToZh({ word, allWords, onRate }: CardEnToZhProps) 
         <motion.p
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className={`text-sm font-medium ${isCorrect ? 'text-emerald-600' : 'text-rose-500'}`}
+          className={`text-sm font-medium ${isCorrect ? 'text-emerald-400' : 'text-rose-500'}`}
         >
           {isCorrect ? `✓ Correct! ${word.chinese} — ${word.pinyin}` : `✗ The answer was ${word.chinese} (${word.pinyin})`}
         </motion.p>

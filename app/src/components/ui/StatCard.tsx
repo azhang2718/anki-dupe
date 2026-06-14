@@ -10,7 +10,7 @@ const colorClasses = {
   blue:    'bg-sky-blue',
   gold:    'bg-xp-gold/30',
   mint:    'bg-success-mint/30',
-  default: 'bg-white',
+  default: 'bg-surface-medium',
 }
 
 export default function StatCard({ label, value, icon, color = 'default', subtext }: StatCardProps) {
@@ -18,8 +18,8 @@ export default function StatCard({ label, value, icon, color = 'default', subtex
     <div className={`${colorClasses[color]} rounded-lg p-6 shadow-soft`}>
       <div className="flex items-start justify-between">
         <div>
-          <p className="text-xs font-medium text-slate-500 uppercase tracking-wide">{label}</p>
-          <p className="text-3xl font-bold text-slate-700 mt-1.5">{value}</p>
+          <p className="text-xs font-medium text-slate-400 uppercase tracking-wide">{label}</p>
+          <p className="text-3xl font-bold text-slate-200 mt-1.5">{value}</p>
           {subtext && <p className="text-xs text-slate-400 mt-1">{subtext}</p>}
         </div>
         {icon && <span className="text-2xl opacity-70">{icon}</span>}

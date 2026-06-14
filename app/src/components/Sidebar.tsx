@@ -32,7 +32,7 @@ export default function Sidebar() {
   const langConfig = LANGUAGE_CONFIGS[activeLang]
 
   return (
-    <aside className="w-56 shrink-0 flex flex-col bg-white/60 border-r border-surface-medium overflow-hidden">
+    <aside className="w-56 shrink-0 flex flex-col cosmic-panel border-r border-white/10 overflow-hidden">
       <nav className="flex-1 flex flex-col gap-0.5 p-3 overflow-y-auto pt-4">
         {navItems.map(({ to, label, Icon: NavIcon }) => (
           <NavLink
@@ -42,8 +42,8 @@ export default function Sidebar() {
               [
                 'no-drag flex items-center gap-3 px-3 py-2.5 rounded-md text-sm font-medium transition-colors duration-150',
                 isActive
-                  ? 'bg-sky-blue text-slate-700 shadow-soft'
-                  : 'text-slate-500 hover:bg-surface-medium hover:text-slate-700',
+                  ? 'bg-sky-blue text-slate-200 shadow-soft'
+                  : 'text-slate-400 hover:bg-surface-medium hover:text-slate-200',
               ].join(' ')
             }
           >
@@ -66,7 +66,7 @@ export default function Sidebar() {
         <div className="flex items-center gap-2">
           <span className="text-base leading-none">{langConfig.flag}</span>
           <div className="min-w-0">
-            <p className="text-[11px] font-semibold text-slate-600 truncate">{langConfig.name}</p>
+            <p className="text-[11px] font-semibold text-slate-300 truncate">{langConfig.name}</p>
             <p className="text-[10px] text-slate-400">{langConfig.nativeName}</p>
           </div>
         </div>
@@ -74,14 +74,14 @@ export default function Sidebar() {
 
       {/* Streak footer */}
       {streak !== null && streak > 0 && (
-        <div className="p-4 border-t border-surface-medium bg-white/40">
+        <div className="p-4 border-t border-surface-medium bg-surface-medium/40">
           <button
             onClick={() => navigate('/review')}
             className="no-drag w-full flex items-center justify-between text-xs"
           >
-            <span className="flex items-center gap-1.5 text-slate-500">
+            <span className="flex items-center gap-1.5 text-slate-400">
               <Fire size={13} weight="fill" className="text-orange-400" />
-              <span className="font-semibold text-slate-600">{streak}</span> day streak
+              <span className="font-semibold text-slate-300">{streak}</span> day streak
             </span>
             <span className="text-focus-blue font-medium hover:underline">Study →</span>
           </button>

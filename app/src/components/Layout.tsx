@@ -4,6 +4,7 @@ import Sidebar from './Sidebar'
 import TitleBar from './TitleBar'
 import GamificationProvider from './GamificationProvider'
 import PageErrorBoundary from './PageErrorBoundary'
+import CosmicBackground from './ui/CosmicBackground'
 
 function AnimatedOutlet() {
   const location = useLocation()
@@ -26,7 +27,8 @@ function AnimatedOutlet() {
 
 export default function Layout() {
   return (
-    <div className="flex flex-col h-screen w-screen overflow-hidden bg-surface-light">
+    <div className="flex flex-col h-screen w-screen overflow-hidden bg-transparent relative">
+      <CosmicBackground />
       <TitleBar />
       <div className="flex flex-1 overflow-hidden">
         <Sidebar />

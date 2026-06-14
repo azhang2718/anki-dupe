@@ -112,15 +112,15 @@ export default function SettingsPage() {
 
   if (loading) return (
     <div className="animate-pulse space-y-4">
-      <div className="h-8 w-40 bg-surface-medium rounded" />
-      <div className="h-32 bg-surface-medium rounded" />
+      <div className="h-8 w-40 cosmic-panel rounded" />
+      <div className="h-32 cosmic-panel rounded" />
     </div>
   )
 
   return (
     <div className="flex flex-col gap-6 max-w-2xl">
       <div>
-        <h1 className="text-2xl font-semibold text-slate-700">Settings</h1>
+        <h1 className="text-2xl font-semibold text-slate-200">Settings</h1>
         <p className="text-slate-400 mt-0.5 text-sm">Configure your experience</p>
       </div>
 
@@ -128,7 +128,7 @@ export default function SettingsPage() {
       <Card>
         <div className="flex flex-col gap-4">
           <div>
-            <p className="text-sm font-semibold text-slate-700 mb-0.5">Language</p>
+            <p className="text-sm font-semibold text-slate-200 mb-0.5">Language</p>
             <p className="text-xs text-slate-400">
               Each language has its own separate vocabulary library, flashcard deck, and statistics.
               Switching reloads the app.
@@ -146,11 +146,11 @@ export default function SettingsPage() {
                   className={`no-drag flex flex-col items-center gap-1.5 px-3 py-3 rounded-lg border-2 transition-all duration-150 ${
                     isActive
                       ? 'border-focus-blue bg-sky-blue shadow-soft'
-                      : 'border-surface-medium bg-white hover:border-silver-blue hover:bg-surface-light'
+                      : 'border-surface-medium bg-surface-medium hover:border-silver-blue hover:bg-surface-light'
                   }`}
                 >
                   <span className="text-2xl">{cfg.flag}</span>
-                  <span className={`text-xs font-semibold ${isActive ? 'text-slate-700' : 'text-slate-500'}`}>
+                  <span className={`text-xs font-semibold ${isActive ? 'text-slate-200' : 'text-slate-400'}`}>
                     {cfg.name}
                   </span>
                   <span className="text-[10px] text-slate-400">{cfg.nativeName}</span>
@@ -178,9 +178,9 @@ export default function SettingsPage() {
               }
             </div>
             <div>
-              <p className="text-sm font-semibold text-slate-700">
+              <p className="text-sm font-semibold text-slate-200">
                 Offline Mode
-                {offlineMode && <span className="ml-2 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-xp-gold/20 text-amber-600">Active</span>}
+                {offlineMode && <span className="ml-2 text-[10px] font-semibold px-1.5 py-0.5 rounded bg-xp-gold/20 text-amber-400">Active</span>}
               </p>
               <p className="text-xs text-slate-400 mt-0.5 leading-relaxed">
                 When enabled, all Claude API features are disabled — vocab extraction, readiness analysis, and
@@ -211,7 +211,7 @@ export default function SettingsPage() {
       <Card className={offlineMode ? 'opacity-50 pointer-events-none' : ''}>
         <div className="flex flex-col gap-4">
           <div>
-            <p className="text-sm font-semibold text-slate-700 mb-0.5">Claude API Key</p>
+            <p className="text-sm font-semibold text-slate-200 mb-0.5">Claude API Key</p>
             <p className="text-xs text-slate-400">
               Required for vocabulary extraction and character recognition. Get yours at console.anthropic.com.
               {offlineMode && ' (Disabled in offline mode)'}
@@ -225,7 +225,7 @@ export default function SettingsPage() {
               placeholder="sk-ant-api03-…"
               spellCheck={false}
               disabled={offlineMode}
-              className="flex-1 px-3 py-2 rounded-md border border-surface-dark bg-surface-light text-slate-700 text-sm outline-none focus:border-ice-blue transition-colors font-mono disabled:opacity-50"
+              className="flex-1 px-3 py-2 rounded-md border border-surface-dark bg-surface-light text-slate-200 text-sm outline-none focus:border-ice-blue transition-colors font-mono disabled:opacity-50"
             />
             <Button onClick={saveApiKey} variant="secondary" size="sm" disabled={saving || !keyChanged || offlineMode}>
               {saving ? 'Saving…' : 'Save'}
@@ -234,7 +234,7 @@ export default function SettingsPage() {
               {testing ? 'Testing…' : 'Test'}
             </Button>
           </div>
-          {testResult === 'ok' && <p className="text-xs text-emerald-600 font-medium">✓ API key is valid and working</p>}
+          {testResult === 'ok' && <p className="text-xs text-emerald-400 font-medium">✓ API key is valid and working</p>}
           {testResult === 'fail' && <p className="text-xs text-rose-500">✗ API key invalid or request failed.</p>}
         </div>
       </Card>
@@ -243,17 +243,17 @@ export default function SettingsPage() {
       <Card>
         <div className="flex flex-col gap-4">
           <div>
-            <p className="text-sm font-semibold text-slate-700 mb-0.5">Review Settings</p>
+            <p className="text-sm font-semibold text-slate-200 mb-0.5">Review Settings</p>
             <p className="text-xs text-slate-400">Daily card limit per session.</p>
           </div>
           <div className="flex items-center gap-3">
-            <p className="text-sm text-slate-600 flex-1">Daily Review Limit</p>
+            <p className="text-sm text-slate-300 flex-1">Daily Review Limit</p>
             <input
               type="number"
               value={reviewLimit}
               min={1}
               onChange={(e) => setReviewLimit(e.target.value)}
-              className="w-20 px-3 py-1.5 rounded-md border border-surface-dark bg-surface-light text-slate-700 text-sm outline-none focus:border-ice-blue text-center"
+              className="w-20 px-3 py-1.5 rounded-md border border-surface-dark bg-surface-light text-slate-200 text-sm outline-none focus:border-ice-blue text-center"
             />
             <Button onClick={saveReviewLimit} variant="secondary" size="sm">Save</Button>
           </div>
@@ -264,14 +264,14 @@ export default function SettingsPage() {
       <Card>
         <div className="flex flex-col gap-4">
           <div>
-            <p className="text-sm font-semibold text-slate-700 mb-0.5">Data Management</p>
+            <p className="text-sm font-semibold text-slate-200 mb-0.5">Data Management</p>
             <p className="text-xs text-slate-400">
               Backup or restore the active language's library, cards, and settings.
               Each language has its own backup.
             </p>
           </div>
           <div className="flex items-center justify-between">
-            <p className="text-sm text-slate-600">Full Backup ({LANGUAGE_CONFIGS[activeLanguage].name})</p>
+            <p className="text-sm text-slate-300">Full Backup ({LANGUAGE_CONFIGS[activeLanguage].name})</p>
             <div className="flex gap-2">
               <Button onClick={importData} variant="ghost" size="sm">📤 Import JSON</Button>
               <Button onClick={exportData} variant="ghost" size="sm">📥 Export JSON</Button>

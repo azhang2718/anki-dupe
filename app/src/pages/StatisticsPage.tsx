@@ -94,8 +94,8 @@ function StatBigCard({ label, value, sub, icon }: { label: string; value: string
   return (
     <Card className="flex flex-col gap-1">
       <span className="text-2xl">{icon}</span>
-      <p className="text-2xl font-bold text-slate-700 mt-1">{value}</p>
-      <p className="text-xs font-semibold text-slate-500">{label}</p>
+      <p className="text-2xl font-bold text-slate-200 mt-1">{value}</p>
+      <p className="text-xs font-semibold text-slate-400">{label}</p>
       {sub && <p className="text-xs text-slate-400">{sub}</p>}
     </Card>
   )
@@ -108,8 +108,8 @@ function SectionHeader({ children }: { children: React.ReactNode }) {
 const CustomTooltip = ({ active, payload, label }: { active?: boolean; payload?: { value: number; name: string; color: string }[]; label?: string }) => {
   if (!active || !payload?.length) return null
   return (
-    <div className="bg-white/95 shadow-modal rounded-lg px-3 py-2 text-xs border border-surface-medium">
-      <p className="font-semibold text-slate-600 mb-1">{label}</p>
+    <div className="bg-surface-medium/95 shadow-modal rounded-lg px-3 py-2 text-xs border border-surface-medium">
+      <p className="font-semibold text-slate-300 mb-1">{label}</p>
       {payload.map((p) => (
         <p key={p.name} style={{ color: p.color }}>{p.name}: <span className="font-semibold">{p.value}</span></p>
       ))}
@@ -130,7 +130,7 @@ function LineToggle({ color, label, active, onClick }: { color: string; label: s
     <button
       onClick={onClick}
       className={`no-drag flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium transition-all border ${
-        active ? 'border-transparent' : 'border-surface-medium bg-white text-slate-400'
+        active ? 'border-transparent' : 'border-surface-medium bg-surface-medium text-slate-400'
       }`}
       style={active ? { background: color + '22', color, borderColor: color + '55' } : {}}
     >
@@ -190,7 +190,7 @@ export default function StatisticsPage() {
   if (loading) {
     return (
       <div className="flex flex-col gap-6">
-        <div className="h-8 w-40 bg-surface-medium rounded-md animate-pulse" />
+        <div className="h-8 w-40 cosmic-panel rounded-md animate-pulse" />
         <div className="grid grid-cols-3 gap-4"><SkeletonCard /><SkeletonCard /><SkeletonCard /></div>
         <SkeletonCard />
       </div>
@@ -216,7 +216,7 @@ export default function StatisticsPage() {
 
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-semibold text-slate-700">Your Progress</h1>
+        <h1 className="text-2xl font-semibold text-slate-200">Your Progress</h1>
         <p className="text-slate-400 text-sm mt-0.5">
           {daily.filter((d) => d.reviewed > 0).length > 0
             ? `Active ${daily.filter((d) => d.reviewed > 0).length} of the last 30 days`
@@ -254,7 +254,7 @@ export default function StatisticsPage() {
               className={`no-drag -mt-3 text-[10px] px-2 py-0.5 rounded-full border font-medium transition-all ${
                 showMultiLang
                   ? 'bg-slate-700 text-white border-slate-700'
-                  : 'text-slate-400 border-surface-medium bg-white hover:bg-surface-light'
+                  : 'text-slate-400 border-surface-medium bg-surface-medium hover:bg-surface-light'
               }`}
             >
               {showMultiLang ? 'All Languages' : 'Active Only'}
@@ -429,10 +429,10 @@ export default function StatisticsPage() {
                     return (
                       <div key={key}>
                         <div className="flex justify-between text-xs mb-1">
-                          <span className="text-slate-600 font-medium">{STATE_LABELS[key]}</span>
+                          <span className="text-slate-300 font-medium">{STATE_LABELS[key]}</span>
                           <span className="text-slate-400">{count} cards · {pct}%</span>
                         </div>
-                        <div className="h-1.5 bg-surface-medium rounded-full overflow-hidden">
+                        <div className="h-1.5 cosmic-panel rounded-full overflow-hidden">
                           <div className="h-full rounded-full transition-all duration-500" style={{ width: `${pct}%`, backgroundColor: STATE_COLORS[key] }} />
                         </div>
                       </div>

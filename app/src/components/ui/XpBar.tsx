@@ -22,7 +22,7 @@ export default function XpBar({ totalXp, level, compact = false }: XpBarProps) {
   if (compact) {
     return (
       <div className="flex items-center gap-2">
-        <span className="text-xs font-semibold text-slate-500">Lv.{level}</span>
+        <span className="text-xs font-semibold text-slate-400">Lv.{level}</span>
         <div className="flex-1">
           <ProgressBar value={progressXp} max={neededXp} color="gold" size="sm" animated={false} />
         </div>
@@ -40,7 +40,7 @@ export default function XpBar({ totalXp, level, compact = false }: XpBarProps) {
             initial={{ scale: 1.3, color: '#FFD866' }}
             animate={{ scale: 1, color: '#64748b' }}
             transition={{ duration: 0.4 }}
-            className="text-sm font-bold text-slate-600"
+            className="text-sm font-bold text-slate-300"
           >
             Level {level}
           </motion.span>

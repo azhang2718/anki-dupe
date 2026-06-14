@@ -83,19 +83,19 @@ export default function WidgetPage() {
         <div className="drag-region flex items-center justify-between px-4 py-3 border-b border-white/30">
           <div className="flex items-center gap-2">
             <span className="text-base">🀄</span>
-            <p className="text-xs font-bold text-slate-700 leading-none">Anki Dupe</p>
+            <p className="text-xs font-bold text-slate-200 leading-none">Anki Dupe</p>
           </div>
           <div className="no-drag flex items-center gap-1.5">
             <button
               onClick={toggleAlwaysOnTop}
               title="Always on top"
-              className={`text-sm px-1.5 py-0.5 rounded transition-colors ${alwaysOnTop ? 'text-focus-blue' : 'text-slate-300 hover:text-slate-500'}`}
+              className={`text-sm px-1.5 py-0.5 rounded transition-colors ${alwaysOnTop ? 'text-focus-blue' : 'text-slate-300 hover:text-slate-400'}`}
             >
               📌
             </button>
             <button
               onClick={toggleExpanded}
-              className="text-slate-300 hover:text-slate-500 text-xs px-1 transition-colors"
+              className="text-slate-300 hover:text-slate-400 text-xs px-1 transition-colors"
             >
               {expanded ? '⊟' : '⊞'}
             </button>
@@ -117,7 +117,7 @@ export default function WidgetPage() {
                 {/* Chinese character */}
                 <div className="flex flex-col items-center gap-1">
                   <p
-                    className="font-chinese font-bold text-slate-800 select-none"
+                    className="font-chinese font-bold text-slate-100 select-none"
                     style={{ fontSize: expanded ? '4rem' : '3rem', textShadow: '0 2px 16px rgba(169,214,255,0.5)' }}
                   >
                     {current.word.chinese}
@@ -132,7 +132,7 @@ export default function WidgetPage() {
                         transition={{ duration: 0.18 }}
                       >
                         <p className="text-slate-400 text-sm tracking-wider">{current.word.pinyin}</p>
-                        <p className="text-slate-700 font-semibold text-base">{current.word.meaning}</p>
+                        <p className="text-slate-200 font-semibold text-base">{current.word.meaning}</p>
                         {expanded && current.word.example_sentence && (
                           <p className="font-chinese text-xs text-slate-400 text-center mt-1 px-2">
                             {current.word.example_sentence}
@@ -144,13 +144,13 @@ export default function WidgetPage() {
                 </div>
 
                 {/* Divider */}
-                <div className="w-full h-px bg-white/40" />
+                <div className="w-full h-px bg-surface-medium/40" />
 
                 {/* Buttons */}
                 {!revealed ? (
                   <button
                     onClick={() => setRevealed(true)}
-                    className="no-drag w-full py-2.5 bg-ice-blue/60 hover:bg-ice-blue rounded-md text-sm font-semibold text-slate-700 transition-colors"
+                    className="no-drag w-full py-2.5 bg-ice-blue/60 hover:bg-ice-blue rounded-md text-sm font-semibold text-slate-200 transition-colors"
                   >
                     Show Answer
                   </button>
@@ -160,7 +160,7 @@ export default function WidgetPage() {
                       <button
                         key={r.key}
                         onClick={() => handleRate(r.value)}
-                        className={`no-drag py-2 rounded-md text-xs font-semibold border bg-white/40 transition-colors ${r.color}`}
+                        className={`no-drag py-2 rounded-md text-xs font-semibold border bg-surface-medium/40 transition-colors ${r.color}`}
                       >
                         {r.label}
                       </button>
@@ -175,7 +175,7 @@ export default function WidgetPage() {
                 animate={{ opacity: 1 }}
               >
                 <p className="text-3xl">🎉</p>
-                <p className="text-slate-600 text-sm font-medium">All caught up!</p>
+                <p className="text-slate-300 text-sm font-medium">All caught up!</p>
                 <p className="text-slate-400 text-xs">{dueCount === 0 ? 'No cards due.' : `${dueCount} cards due`}</p>
               </motion.div>
             )}

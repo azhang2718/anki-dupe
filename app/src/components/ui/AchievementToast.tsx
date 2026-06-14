@@ -16,7 +16,7 @@ export default function AchievementToast({ achievement, onDismiss }: Achievement
       {achievement && (
         <motion.div
           key={achievement.key}
-          className="fixed bottom-5 right-5 z-50 flex items-center gap-3 bg-white rounded-lg shadow-modal px-4 py-3.5 min-w-60 max-w-72 border border-xp-gold/25 cursor-pointer"
+          className="fixed bottom-5 right-5 z-50 flex items-center gap-3 cosmic-panel rounded-lg shadow-modal px-4 py-3.5 min-w-60 max-w-72 border border-xp-gold/25 cursor-pointer"
           initial={{ opacity: 0, y: 12, scale: 0.95 }}
           animate={{ opacity: 1, y: 0,  scale: 1 }}
           exit={{    opacity: 0, y: 8,  scale: 0.97 }}
@@ -39,7 +39,7 @@ export default function AchievementToast({ achievement, onDismiss }: Achievement
             <span className="text-[10px] font-semibold text-amber-500 uppercase tracking-wider leading-none mb-0.5">
               Achievement Unlocked
             </span>
-            <span className="text-sm font-semibold text-slate-700 truncate">{achievement.name}</span>
+            <span className="text-sm font-semibold text-slate-200 truncate">{achievement.name}</span>
             <span className="text-xs text-slate-400 truncate">{achievement.description}</span>
           </div>
           <div className="ml-auto shrink-0">

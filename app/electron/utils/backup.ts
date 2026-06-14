@@ -12,7 +12,6 @@ export function exportFullBackup(): any {
   data.documents = db.prepare('SELECT * FROM documents').all()
   data.settings = db.prepare('SELECT * FROM settings').all()
   data.statistics = db.prepare('SELECT * FROM statistics').all()
-  data.user_achievements = db.prepare('SELECT * FROM user_achievements').all()
 
   return data
 }
@@ -25,11 +24,11 @@ export function importFullBackup(data: any): void {
     db.prepare('DELETE FROM reviews').run()
     db.prepare('DELETE FROM cards').run()
     db.prepare('DELETE FROM words').run()
-    db.prepare('DELETE FROM user_achievements').run()
     db.prepare('DELETE FROM documents').run()
     db.prepare('DELETE FROM statistics').run()
     db.prepare('DELETE FROM settings').run()
     db.prepare('DELETE FROM users').run()
+    db.prepare('DELETE FROM achievements').run()
 
     // Users
     if (data.users) {
@@ -57,41 +56,41 @@ export function importFullBackup(data: any): void {
 
     // Reviews
     if (data.reviews) {
-      const insert = db.prepare('INSERT INTO reviews (id, card_id, rating, state, due, stability, difficulty, elapsed_days, scheduled_days, review_date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
+      const insert = db.prepare('INSERT INTO reviews (id, card_id, word_id, rating, time_taken_ms, xp_earned, reviewed_at) VALUES (?, ?, ?, ?, ?, ?, ?)')
       for (const r of data.reviews) {
-        insert.run(r.id, r.card_id, r.rating, r.state, r.due, r.stability, r.difficulty, r.elapsed_days, r.scheduled_days, r.review_date)
+        insert.run(r.id, r.card_id, r.word_id, r.rating, r.time_taken_ms, r.xp_earned, r.reviewed_at)
+      }
+    }
+
+    // Achievements
+    if (data.achievements) {
+      const insert = db.prepare('INSERT INTO achievements (id, key, name, description, icon, xp_reward, unlocked_at) VALUES (?, ?, ?, ?, ?, ?, ?)')
+      for (const a of data.achievements) {
+        insert.run(a.id, a.key, a.name, a.description, a.icon, a.xp_reward, a.unlocked_at)
       }
     }
 
     // Documents
     if (data.documents) {
-      const insert = db.prepare('INSERT INTO documents (id, title, file_path, source_type, raw_text, processing_status, word_count, comprehension_score, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)')
+      const insert = db.prepare('INSERT INTO documents (id, title, file_path, source_type, raw_text, processing_status, word_count, known_word_count, comprehension_score, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)')
       for (const d of data.documents) {
-        insert.run(d.id, d.title, d.file_path, d.source_type, d.raw_text, d.processing_status, d.word_count, d.comprehension_score, d.created_at)
+        insert.run(d.id, d.title, d.file_path, d.source_type, d.raw_text, d.processing_status, d.word_count, d.known_word_count, d.comprehension_score, d.created_at)
       }
     }
 
     // Settings
     if (data.settings) {
-      const insert = db.prepare('INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES (?, ?, ?)')
+      const insert = db.prepare('INSERT OR REPLACE INTO settings (key, value) VALUES (?, ?)')
       for (const s of data.settings) {
-        insert.run(s.key, s.value, s.updated_at)
+        insert.run(s.key, s.value)
       }
     }
 
     // Statistics
     if (data.statistics) {
-       const insert = db.prepare('INSERT INTO statistics (id, date, words_learned, cards_reviewed, xp_earned, study_time_minutes) VALUES (?, ?, ?, ?, ?, ?)')
-       for (const s of data.statistics) {
-         insert.run(s.id, s.date, s.words_learned, s.cards_reviewed, s.xp_earned, s.study_time_minutes)
-       }
-    }
-
-    // User Achievements
-    if (data.user_achievements) {
-      const insert = db.prepare('INSERT INTO user_achievements (user_id, achievement_id, unlocked_at) VALUES (?, ?, ?)')
-      for (const ua of data.user_achievements) {
-        insert.run(ua.user_id, ua.achievement_id, ua.unlocked_at)
+      const insert = db.prepare('INSERT INTO statistics (id, date, words_reviewed, words_correct, xp_earned, study_time_ms, new_words_learned) VALUES (?, ?, ?, ?, ?, ?, ?)')
+      for (const s of data.statistics) {
+        insert.run(s.id, s.date, s.words_reviewed, s.words_correct, s.xp_earned, s.study_time_ms, s.new_words_learned)
       }
     }
   })()

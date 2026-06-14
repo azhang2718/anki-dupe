@@ -30,7 +30,7 @@ export default function Modal({ open, onClose, title, children, width = 'md' }: 
             onClick={onClose}
           />
           <motion.div
-            className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full ${widthClasses[width]} bg-white rounded-lg shadow-modal p-6`}
+            className={`fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-50 w-full ${widthClasses[width]} cosmic-panel rounded-lg shadow-modal p-6`}
             initial={{ opacity: 0, scale: 0.95, y: 'calc(-50% + 8px)' }}
             animate={{ opacity: 1, scale: 1,    y: '-50%' }}
             exit={{    opacity: 0, scale: 0.97,  y: 'calc(-50% + 4px)' }}
@@ -42,10 +42,10 @@ export default function Modal({ open, onClose, title, children, width = 'md' }: 
           >
             {title && (
               <div className="flex items-center justify-between mb-5">
-                <h2 className="text-base font-semibold text-slate-700">{title}</h2>
+                <h2 className="text-base font-semibold text-slate-200">{title}</h2>
                 <button
                   onClick={onClose}
-                  className="no-drag p-1 -mr-1 rounded-md text-slate-400 hover:text-slate-600 hover:bg-surface-medium transition-colors duration-150"
+                  className="no-drag p-1 -mr-1 rounded-md text-slate-400 hover:text-slate-300 hover:bg-surface-medium transition-colors duration-150"
                 >
                   <X size={16} weight="bold" />
                 </button>

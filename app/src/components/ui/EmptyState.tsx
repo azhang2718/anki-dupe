@@ -19,7 +19,7 @@ export default function EmptyState({
     <div className="flex flex-col items-center justify-center py-16 gap-4 text-center">
       <span className="text-5xl">{icon}</span>
       <div>
-        <p className="text-slate-600 font-medium text-base">{title}</p>
+        <p className="text-slate-300 font-medium text-base">{title}</p>
         {description && <p className="text-slate-400 text-sm mt-1 max-w-xs">{description}</p>}
       </div>
       {actionLabel && onAction && (

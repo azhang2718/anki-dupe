@@ -20,7 +20,12 @@
   }
 
   body {
-    @apply bg-surface-light font-sans text-slate-800;
+    @apply font-sans text-slate-100;
+    background:
+      radial-gradient(120% 90% at 78% 12%, rgba(109, 90, 168, 0.30) 0%, transparent 55%),
+      radial-gradient(110% 80% at 30% 100%, rgba(58, 58, 134, 0.35) 0%, transparent 60%),
+      linear-gradient(160deg, #0a0e2a 0%, #141a45 42%, #241a52 72%, #1a1340 100%);
+    background-attachment: fixed;
     margin: 0;
     padding: 0;
     overflow: hidden;
@@ -35,26 +40,33 @@
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    @apply bg-silver-blue rounded-full;
+    @apply bg-surface-dark rounded-full;
   }
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-ice-blue;
+    @apply bg-silver-blue;
   }
 }
 
 @layer utilities {
   .glass {
-    backdrop-filter: blur(20px);
-    background: rgba(255, 255, 255, 0.75);
-    border: 1px solid rgba(255, 255, 255, 0.5);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.6);
+    backdrop-filter: blur(20px) saturate(1.1);
+    background: linear-gradient(150deg, rgba(40, 44, 96, 0.55) 0%, rgba(26, 31, 69, 0.62) 100%);
+    border: 1px solid rgba(165, 180, 252, 0.16);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 8px 32px rgba(10, 14, 42, 0.45);
   }
 
   .glass-strong {
-    backdrop-filter: blur(30px);
-    background: rgba(255, 255, 255, 0.9);
-    border: 1px solid rgba(255, 255, 255, 0.65);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(34px) saturate(1.15);
+    background: linear-gradient(150deg, rgba(48, 52, 112, 0.78) 0%, rgba(30, 35, 80, 0.85) 100%);
+    border: 1px solid rgba(165, 180, 252, 0.20);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.09), 0 12px 40px rgba(10, 14, 42, 0.5);
+  }
+
+  /* Translucent panel that lets the cosmic backdrop glow through */
+  .cosmic-panel {
+    background: linear-gradient(155deg, rgba(40, 44, 96, 0.46) 0%, rgba(22, 27, 60, 0.56) 100%);
+    backdrop-filter: blur(14px) saturate(1.08);
+    border: 1px solid rgba(165, 180, 252, 0.14);
   }
 
   .drag-region {

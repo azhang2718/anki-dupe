@@ -267,7 +267,7 @@ export default function DrawPage() {
   return (
     <div className="flex flex-col items-center gap-8 max-w-lg mx-auto py-8">
       <div className="text-center">
-        <h1 className="text-xl font-semibold text-slate-700">{langConfig.charLabel} Recognition</h1>
+        <h1 className="text-xl font-semibold text-slate-200">{langConfig.charLabel} Recognition</h1>
         <p className="text-sm text-slate-400 mt-1">
           Draw a {langConfig.name} {langConfig.charLabel.toLowerCase()} — matched against your vocabulary using OCR
         </p>
@@ -319,7 +319,7 @@ export default function DrawPage() {
         <button
           onClick={handleClear}
           disabled={!hasDrawing && !result}
-          className="no-drag flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium text-slate-500 bg-surface-medium hover:bg-silver-blue transition-colors duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
+          className="no-drag flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium text-slate-400 bg-surface-medium hover:bg-silver-blue transition-colors duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
         >
           <ArrowCounterClockwise size={15} />
           Clear
@@ -329,7 +329,7 @@ export default function DrawPage() {
           disabled={!hasDrawing || loading}
           whileTap={{ scale: 0.97 }}
           transition={{ duration: 0.12, ease: [0.23, 1, 0.32, 1] }}
-          className="no-drag flex items-center gap-2 px-6 py-2.5 rounded-md text-sm font-semibold bg-ice-blue text-slate-700 hover:bg-focus-blue hover:text-white shadow-soft transition-colors duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
+          className="no-drag flex items-center gap-2 px-6 py-2.5 rounded-md text-sm font-semibold bg-ice-blue text-slate-200 hover:bg-focus-blue hover:text-white shadow-soft transition-colors duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
         >
           {loading ? (
             <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
@@ -347,7 +347,7 @@ export default function DrawPage() {
 
       {/* Error */}
       {error && (
-        <div className="w-full max-w-sm bg-error-pink/20 border border-error-pink/40 rounded-lg px-4 py-3 text-sm text-slate-600">
+        <div className="w-full max-w-sm bg-error-pink/20 border border-error-pink/40 rounded-lg px-4 py-3 text-sm text-slate-300">
           {error}
         </div>
       )}
@@ -356,7 +356,7 @@ export default function DrawPage() {
       <AnimatePresence>
         {result && (
           <motion.div
-            className="w-full max-w-sm bg-white rounded-xl shadow-modal overflow-hidden"
+            className="w-full max-w-sm cosmic-panel rounded-xl shadow-modal overflow-hidden"
             initial={{ opacity: 0, y: 12, scale: 0.97 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.98 }}
@@ -364,7 +364,7 @@ export default function DrawPage() {
           >
             <div className="px-6 pt-6 pb-4 flex items-start gap-5">
               <p
-                className="text-6xl font-bold text-slate-800 leading-none shrink-0"
+                className="text-6xl font-bold text-slate-100 leading-none shrink-0"
                 style={{ fontFamily: langConfig.fontFamily }}
               >
                 {result.chinese}
@@ -375,10 +375,10 @@ export default function DrawPage() {
                     <p className="text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
                       {langConfig.readingLabel}
                     </p>
-                    <p className="text-slate-500 text-sm tracking-wide">{result.pinyin}</p>
+                    <p className="text-slate-400 text-sm tracking-wide">{result.pinyin}</p>
                   </>
                 )}
-                <p className="text-slate-700 font-medium text-sm leading-snug mt-1">{result.meaning}</p>
+                <p className="text-slate-200 font-medium text-sm leading-snug mt-1">{result.meaning}</p>
               </div>
             </div>
 

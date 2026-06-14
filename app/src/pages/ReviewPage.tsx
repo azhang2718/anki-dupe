@@ -10,8 +10,11 @@ import SessionSummary from '../components/flashcards/SessionSummary'
 import ProgressBar from '../components/ui/ProgressBar'
 import EmptyState from '../components/ui/EmptyState'
 import Button from '../components/ui/Button'
+import StarJar from '../components/ui/StarJar'
 import type { Card, Word } from '../types/db'
 import type { LanguageCode } from '../types/languages'
+
+const DAILY_GOAL = 100
 
 function pickCardType(card: Card, allWords: Word[]): 'zh_to_en' | 'mcq' | 'cloze' {
   if (card.card_type === 'cloze') return 'cloze'
@@ -34,10 +37,15 @@ export default function ReviewPage() {
   const [allWords, setAllWords] = useState<Word[]>([])
   const [cardKey, setCardKey] = useState(0)
   const [activeLang, setActiveLang] = useState<LanguageCode>('chinese')
+  const [todayBase, setTodayBase] = useState(0)
 
   useEffect(() => {
     window.db.language.get()
       .then((l) => setActiveLang((l ?? 'chinese') as LanguageCode))
+      .catch(() => null)
+
+    window.db.stats.getToday()
+      .then((s) => setTodayBase(s?.words_reviewed ?? 0))
       .catch(() => null)
 
     store.reset()
@@ -169,49 +177,59 @@ export default function ReviewPage() {
   const reviewed = store.totalInSession - store.queue.length - 1
   const progress = store.totalInSession > 0 ? (reviewed / store.totalInSession) * 100 : 0
   const cardType = pickCardType(card, allWords)
+  const sessionDone = store.correct + store.incorrect
+  const todayCount = todayBase + sessionDone
 
   return (
-    <div className="flex flex-col h-full gap-6">
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center justify-between text-sm">
-          <div className="flex items-center gap-2">
-            <span className="text-slate-500 font-medium">{reviewed + 1} / {store.totalInSession}</span>
-            {isChallenge && (
-              <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-xp-gold/20 text-amber-600 border border-xp-gold/30">
-                ⚡ Challenge
-              </span>
-            )}
+    <div className="flex flex-row h-full gap-6">
+      {/* ── Flashcard column ── */}
+      <div className="flex-1 flex flex-col gap-6 min-w-0">
+        <div className="flex flex-col gap-2">
+          <div className="flex items-center justify-between text-sm">
+            <div className="flex items-center gap-2">
+              <span className="text-slate-400 font-medium">{reviewed + 1} / {store.totalInSession}</span>
+              {isChallenge && (
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-xp-gold/20 text-amber-400 border border-xp-gold/30">
+                  ⚡ Challenge
+                </span>
+              )}
+            </div>
+            <div className="flex items-center gap-3 text-xs">
+              <span className="text-emerald-500">✓ {store.correct}</span>
+              <span className="text-rose-400">✗ {store.incorrect}</span>
+              <Button onClick={() => navigate('/dashboard')} variant="ghost" size="sm">Exit</Button>
+            </div>
           </div>
-          <div className="flex items-center gap-3 text-xs">
-            <span className="text-emerald-500">✓ {store.correct}</span>
-            <span className="text-rose-400">✗ {store.incorrect}</span>
-            <Button onClick={() => navigate('/dashboard')} variant="ghost" size="sm">Exit</Button>
-          </div>
+          <ProgressBar value={progress} color={isChallenge ? 'gold' : 'blue'} size="sm" animated={false} />
         </div>
-        <ProgressBar value={progress} color={isChallenge ? 'gold' : 'blue'} size="sm" animated={false} />
+
+        <div className="flex-1 flex items-center justify-center">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={cardKey}
+              className="w-full"
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -20 }}
+              transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
+            >
+              {cardType === 'zh_to_en' && <CardZhToEn word={word} isChallenge={isChallenge} onRate={handleRate} />}
+              {cardType === 'mcq' && <CardMCQ word={word} allWords={allWords} activeLang={activeLang} onRate={handleRate} onPenalizeWord={handlePenalizeWord} />}
+              {cardType === 'cloze' && <CardCloze word={word} isChallenge={isChallenge} onRate={handleRate} />}
+            </motion.div>
+          </AnimatePresence>
+        </div>
+
+        <div className="flex justify-center pb-2">
+          <span className="text-xs text-slate-300 uppercase tracking-widest">
+            {cardType === 'zh_to_en' ? 'Translate to English' : cardType === 'mcq' ? 'Pick the right word' : 'Fill in the blank'}
+          </span>
+        </div>
       </div>
 
-      <div className="flex-1 flex items-center justify-center">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={cardKey}
-            className="w-full"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            transition={{ duration: 0.2, ease: [0.23, 1, 0.32, 1] }}
-          >
-            {cardType === 'zh_to_en' && <CardZhToEn word={word} isChallenge={isChallenge} onRate={handleRate} />}
-            {cardType === 'mcq' && <CardMCQ word={word} allWords={allWords} activeLang={activeLang} onRate={handleRate} onPenalizeWord={handlePenalizeWord} />}
-            {cardType === 'cloze' && <CardCloze word={word} isChallenge={isChallenge} onRate={handleRate} />}
-          </motion.div>
-        </AnimatePresence>
-      </div>
-
-      <div className="flex justify-center pb-2">
-        <span className="text-xs text-slate-300 uppercase tracking-widest">
-          {cardType === 'zh_to_en' ? 'Translate to English' : cardType === 'mcq' ? 'Pick the right word' : 'Fill in the blank'}
-        </span>
+      {/* ── Star jar sidebar ── */}
+      <div className="w-44 shrink-0 flex flex-col items-center justify-center">
+        <StarJar count={todayCount} goal={DAILY_GOAL} />
       </div>
     </div>
   )

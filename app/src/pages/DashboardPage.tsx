@@ -46,7 +46,7 @@ export default function DashboardPage() {
   if (loading) {
     return (
       <div className="flex flex-col gap-6">
-        <div className="h-8 w-48 bg-surface-medium rounded-md animate-pulse" />
+        <div className="h-8 w-48 cosmic-panel rounded-md animate-pulse" />
         <div className="grid grid-cols-3 gap-4"><SkeletonCard /><SkeletonCard /><SkeletonCard /></div>
       </div>
     )
@@ -62,7 +62,7 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-700">{getGreeting()} ☀️</h1>
+          <h1 className="text-2xl font-semibold text-slate-200">{getGreeting()} ☀️</h1>
           <p className="text-slate-400 mt-0.5 text-sm">Your reading journey continues.</p>
         </div>
         {dueCount > 0 && (
@@ -112,12 +112,12 @@ export default function DashboardPage() {
         <div className="grid grid-cols-2 gap-4">
           <Card onClick={() => navigate('/review')}>
             <p className="text-2xl mb-2">🃏</p>
-            <p className="font-semibold text-slate-700 text-sm">Review Cards</p>
+            <p className="font-semibold text-slate-200 text-sm">Review Cards</p>
             <p className="text-slate-400 text-xs mt-0.5">{dueCount > 0 ? `${dueCount} cards due now` : 'All caught up!'}</p>
           </Card>
           <Card onClick={() => navigate('/import')}>
             <p className="text-2xl mb-2">📥</p>
-            <p className="font-semibold text-slate-700 text-sm">Import Content</p>
+            <p className="font-semibold text-slate-200 text-sm">Import Content</p>
             <p className="text-slate-400 text-xs mt-0.5">Add screenshots, PDFs, text</p>
           </Card>
         </div>

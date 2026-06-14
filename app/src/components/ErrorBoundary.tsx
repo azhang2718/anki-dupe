@@ -37,8 +37,8 @@ export default class ErrorBoundary extends Component<Props, State> {
         <div className="flex items-center justify-center min-h-screen bg-surface-light p-6">
           <Card className="max-w-md w-full text-center py-10">
             <div className="text-4xl mb-4">⚠️</div>
-            <h1 className="text-xl font-bold text-slate-800 mb-2">Something went wrong</h1>
-            <p className="text-sm text-slate-500 mb-6 px-4">
+            <h1 className="text-xl font-bold text-slate-100 mb-2">Something went wrong</h1>
+            <p className="text-sm text-slate-400 mb-6 px-4">
               An unexpected error occurred. You can try reloading the app or returning to the dashboard.
             </p>
             {this.state.error && (

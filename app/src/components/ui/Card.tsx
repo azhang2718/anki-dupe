@@ -26,7 +26,7 @@ export default function Card({
       transition={{ duration: 0.12, ease: [0.23, 1, 0.32, 1] }}
       className={[
         'rounded-lg shadow-soft',
-        glass ? 'glass' : 'bg-white',
+        glass ? 'glass' : 'cosmic-panel',
         paddingClasses[padding],
         onClick
           ? 'cursor-pointer hover:shadow-float transition-shadow duration-200'

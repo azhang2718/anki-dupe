@@ -6,11 +6,11 @@ interface BadgeProps {
 }
 
 const colorClasses: Record<BadgeColor, string> = {
-  blue:  'bg-sky-blue text-slate-600',
-  gold:  'bg-xp-gold/40 text-amber-700',
-  mint:  'bg-success-mint/40 text-emerald-700',
-  pink:  'bg-error-pink/40 text-rose-700',
-  gray:  'bg-surface-medium text-slate-500',
+  blue:  'bg-sky-blue text-slate-300',
+  gold:  'bg-xp-gold/40 text-amber-300',
+  mint:  'bg-success-mint/40 text-emerald-400',
+  pink:  'bg-error-pink/40 text-rose-400',
+  gray:  'bg-surface-medium text-slate-400',
 }
 
 export default function Badge({ children, color = 'gray' }: BadgeProps) {

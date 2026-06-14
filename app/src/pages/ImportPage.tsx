@@ -225,7 +225,7 @@ export default function ImportPage() {
       {/* Header */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-semibold text-slate-700">Import Content</h1>
+          <h1 className="text-2xl font-semibold text-slate-200">Import Content</h1>
           <p className="text-slate-400 text-sm mt-0.5">
             Add screenshots, PDFs, text files, or entire folders
           </p>
@@ -297,7 +297,7 @@ export default function ImportPage() {
               <span>🖼️</span><span>📄</span><span>📝</span><span>📁</span>
             </div>
             <div>
-              <p className="text-slate-600 font-medium">Drop files or folders here</p>
+              <p className="text-slate-300 font-medium">Drop files or folders here</p>
               <p className="text-slate-400 text-sm mt-1">
                 PNG · JPG · WEBP · PDF · TXT · SRT · DOCX
               </p>
@@ -323,7 +323,7 @@ export default function ImportPage() {
 
       {/* Summary */}
       {docs.length > 0 && (
-        <div className="flex items-center gap-3 text-xs text-slate-500">
+        <div className="flex items-center gap-3 text-xs text-slate-400">
           <span>{docs.length} document{docs.length !== 1 ? 's' : ''}</span>
           {doneCount > 0 && <span className="text-emerald-500">· {doneCount} ready</span>}
           {pendingCount > 0 && <span className="text-amber-500">· {pendingCount} pending</span>}
@@ -369,7 +369,7 @@ export default function ImportPage() {
 
       {/* Format guide */}
       <Card className="mt-2">
-        <p className="text-xs font-semibold text-slate-500 mb-3">Supported Formats</p>
+        <p className="text-xs font-semibold text-slate-400 mb-3">Supported Formats</p>
         <div className="grid grid-cols-3 gap-y-2 gap-x-4">
           {[
             { icon: '🖼️', label: 'Images',  desc: 'PNG, JPG, WEBP — Tesseract OCR extracts Chinese text' },
@@ -382,7 +382,7 @@ export default function ImportPage() {
             <div key={f.label} className="flex items-start gap-2">
               <span className="text-base mt-0.5">{f.icon}</span>
               <div>
-                <p className="text-xs font-semibold text-slate-600">{f.label}</p>
+                <p className="text-xs font-semibold text-slate-300">{f.label}</p>
                 <p className="text-[11px] text-slate-400 leading-snug">{f.desc}</p>
               </div>
             </div>
@@ -417,12 +417,12 @@ function DocumentRow({
   return (
     <div className={`
       flex flex-col gap-2 px-4 py-3 rounded-lg border transition-colors
-      ${isNew ? 'border-ice-blue bg-sky-blue/10' : 'border-surface-medium bg-white/60'}
+      ${isNew ? 'border-ice-blue bg-sky-blue/10' : 'border-surface-medium bg-surface-medium/60'}
     `}>
       <div className="flex items-center gap-3">
         <span className="text-xl shrink-0">{TYPE_ICONS[doc.source_type] ?? '📄'}</span>
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-medium text-slate-700 truncate">{doc.title}</p>
+          <p className="text-sm font-medium text-slate-200 truncate">{doc.title}</p>
           {folder && (
             <p className="text-[11px] text-slate-400 truncate mt-0.5">…/{folder}/</p>
           )}
